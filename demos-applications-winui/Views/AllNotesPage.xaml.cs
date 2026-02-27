@@ -1,34 +1,33 @@
-using demos_applications_winui.Modals;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using demos_applications_winui.Models;
+using demos_applications_winui.ViewModels;
 
 namespace demos_applications_winui.Views;
 
 public sealed partial class AllNotesPage : Page
 {
-    private AllNotes notesModel = new AllNotes();
+    public AllNotesViewModel ViewModel { get; }
 
     public AllNotesPage()
     {
+        ViewModel = App.Current.Services.GetRequiredService<AllNotesViewModel>();
         InitializeComponent();
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        notesModel.LoadNotes();
-    }
 
-    private void OnNewNoteClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        Frame.Navigate(typeof(NotePage), new Note());
+        await ViewModel.LoadNotesCommand.ExecuteAsync(null);
     }
 
     private void ItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
         if (args.InvokedItem is Note note)
         {
-            Frame.Navigate(typeof(NotePage), note);
+            ViewModel.OpenNoteCommand.Execute(note);
         }
     }
 }

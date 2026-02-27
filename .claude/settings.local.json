@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv demos-applications-winui/Modals demos-applications-winui/Models)",
+      "Bash(dotnet restore)",
+      "Bash(dotnet build -p:Platform=x64)"
+    ]
+  }
+}

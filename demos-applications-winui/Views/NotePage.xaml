@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <Grid Padding="16" RowSpacing="8">
-        
+
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -20,12 +20,12 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBox x:Name="NoteEditor"
-            Text="{x:Bind noteModel.Text, Mode=TwoWay}"
+        <TextBox
+            Text="{x:Bind ViewModel.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             AcceptsReturn="True"
             TextWrapping="Wrap"
             PlaceholderText="Enter your note"
-            Header="{x:Bind noteModel.Date.ToString()}"
+            Header="{x:Bind ViewModel.Date.ToString()}"
             ScrollViewer.VerticalScrollBarVisibility="Auto"
             Width="400"
             Grid.Column="1"/>
@@ -36,10 +36,10 @@
                 Spacing="4"
                 Grid.Row="1"
                 Grid.Column="1">
-                    <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Click="SaveButton_Click"/>
-                    <Button Content="Delete" Click="DeleteButton_Click"/>
+                    <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SaveCommand}"/>
+                    <Button Content="Delete" Command="{x:Bind ViewModel.DeleteCommand}"/>
         </StackPanel>
-        
+
     </Grid>
-    
+
 </Page>
