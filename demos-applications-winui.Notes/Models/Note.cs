@@ -1,6 +1,6 @@
 using System;
 
-namespace demos_applications_winui.Models;
+namespace demos_applications_winui.Notes.Models;
 
 public class Note
 {

@@ -11,7 +11,9 @@
       "Bash(dotnet build -p:Platform=x64 -v:detailed)",
       "Bash(dotnet --version)",
       "Bash(dotnet build)",
-      "Bash(grep -r \"namespace.*Authentication\\\\|namespace.*Authorization\\\\|namespace.*SessionManagement\\\\|namespace.*Content\\\\|namespace.*Tenants\\\\|namespace.*UserManagement\" \"C:\\\\Users\\\\steve\\\\github\\\\demos.applications.maui\\\\Demos.Applications.MAUI\" --include=\"*.cs\" ! -path \"*/obj/*\")"
+      "Bash(grep -r \"namespace.*Authentication\\\\|namespace.*Authorization\\\\|namespace.*SessionManagement\\\\|namespace.*Content\\\\|namespace.*Tenants\\\\|namespace.*UserManagement\" \"C:\\\\Users\\\\steve\\\\github\\\\demos.applications.maui\\\\Demos.Applications.MAUI\" --include=\"*.cs\" ! -path \"*/obj/*\")",
+      "Bash(dotnet new sln)",
+      "Bash(dotnet sln add demos-applications-winui/demos-applications-winui.csproj)"
     ]
   }
 }

@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
-using demos_applications_winui.Services;
-using demos_applications_winui.ViewModels;
+using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Notes.ViewModels;
 
-namespace demos_applications_winui.Views;
+namespace demos_applications_winui.Notes.Views;
 
 public sealed partial class NotePage(NoteViewModel viewModel) : Page, INavigable
 {

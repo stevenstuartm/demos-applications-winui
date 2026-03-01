@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using demos_applications_winui.Models;
+using demos_applications_winui.Notes.Models;
 using Windows.Storage;
 
-namespace demos_applications_winui.Services;
+namespace demos_applications_winui.Notes.Services;
 
-public class NotesService : INotesService
+public class NotesClient : INotesClient
 {
     private readonly StorageFolder _storageFolder = ApplicationData.Current.LocalFolder;
 
-    public async Task<IReadOnlyList<Note>> LoadNotesAsync()
+    public async Task<IReadOnlyList<Note>> GetAllNotesAsync()
     {
         var notes = new List<Note>();
         await LoadFilesRecursivelyAsync(_storageFolder, notes);

@@ -1,9 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Notes;
+using demos_applications_winui.Notes.Views;
 using demos_applications_winui.Services;
-using demos_applications_winui.ViewModels;
-using demos_applications_winui.Views;
 
 namespace demos_applications_winui;
 
@@ -34,14 +35,9 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton<INotesService, NotesService>();
+        services.AddNotes();
         services.AddSingleton<INavigationService, NavigationService>();
 
-        services.AddSingleton<AllNotesViewModel>();
-        services.AddSingleton<NoteViewModel>();
-
-        services.AddSingleton<AllNotesPage>();
-        services.AddSingleton<NotePage>();
         services.AddSingleton<MainWindow>();
 
         return services.BuildServiceProvider();

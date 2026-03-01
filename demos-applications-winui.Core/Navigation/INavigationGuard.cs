@@ -1,6 +1,6 @@
 using System;
 
-namespace demos_applications_winui.Services;
+namespace demos_applications_winui.Core.Navigation;
 
 public interface INavigationGuard
 {

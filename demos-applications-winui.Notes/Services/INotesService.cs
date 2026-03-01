@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using demos_applications_winui.Models;
+using demos_applications_winui.Notes.Models;
 
-namespace demos_applications_winui.Services;
+namespace demos_applications_winui.Notes.Services;
 
 public interface INotesService
 {

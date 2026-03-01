@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace demos_applications_winui.Services;
+namespace demos_applications_winui.Core.Navigation;
 
 public enum NavigationMode { New, Back }
 

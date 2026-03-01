@@ -2,11 +2,12 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using demos_applications_winui.Models;
-using demos_applications_winui.Services;
-using demos_applications_winui.Views;
+using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Notes.Models;
+using demos_applications_winui.Notes.Services;
+using demos_applications_winui.Notes.Views;
 
-namespace demos_applications_winui.ViewModels;
+namespace demos_applications_winui.Notes.ViewModels;
 
 public partial class AllNotesViewModel(
     INotesService notesService,

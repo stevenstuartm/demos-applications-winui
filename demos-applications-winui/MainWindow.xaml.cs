@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using demos_applications_winui.Services;
+using demos_applications_winui.Core.Navigation;
 
 namespace demos_applications_winui;
 

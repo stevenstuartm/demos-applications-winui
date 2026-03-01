@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 
-namespace demos_applications_winui.Services;
+namespace demos_applications_winui.Core.Navigation;
 
 public interface INavigationService : INotifyPropertyChanged
 {
