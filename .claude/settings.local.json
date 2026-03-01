@@ -3,7 +3,15 @@
     "allow": [
       "Bash(git mv demos-applications-winui/Modals demos-applications-winui/Models)",
       "Bash(dotnet restore)",
-      "Bash(dotnet build -p:Platform=x64)"
+      "Bash(dotnet build -p:Platform=x64)",
+      "Bash(dotnet --list-sdks)",
+      "Bash(dotnet nuget search CommunityToolkit.Mvvm --take 1)",
+      "Bash(dotnet package search CommunityToolkit.Mvvm --take 3)",
+      "Bash(dotnet package search CommunityToolkit.Mvvm --prerelease --take 3)",
+      "Bash(dotnet build -p:Platform=x64 -v:detailed)",
+      "Bash(dotnet --version)",
+      "Bash(dotnet build)",
+      "Bash(grep -r \"namespace.*Authentication\\\\|namespace.*Authorization\\\\|namespace.*SessionManagement\\\\|namespace.*Content\\\\|namespace.*Tenants\\\\|namespace.*UserManagement\" \"C:\\\\Users\\\\steve\\\\github\\\\demos.applications.maui\\\\Demos.Applications.MAUI\" --include=\"*.cs\" ! -path \"*/obj/*\")"
     ]
   }
 }

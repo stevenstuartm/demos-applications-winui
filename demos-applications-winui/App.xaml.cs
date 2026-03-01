@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using demos_applications_winui.Services;
 using demos_applications_winui.ViewModels;
+using demos_applications_winui.Views;
 
 namespace demos_applications_winui;
 
@@ -22,8 +23,11 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _window = new MainWindow();
+        _window = Services.GetRequiredService<MainWindow>();
         _window.Activate();
+
+        var navigationService = Services.GetRequiredService<INavigationService>();
+        navigationService.NavigateTo<AllNotesPage>();
     }
 
     private static IServiceProvider ConfigureServices()
@@ -33,8 +37,12 @@ public partial class App : Application
         services.AddSingleton<INotesService, NotesService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
-        services.AddTransient<AllNotesViewModel>();
-        services.AddTransient<NoteViewModel>();
+        services.AddSingleton<AllNotesViewModel>();
+        services.AddSingleton<NoteViewModel>();
+
+        services.AddSingleton<AllNotesPage>();
+        services.AddSingleton<NotePage>();
+        services.AddSingleton<MainWindow>();
 
         return services.BuildServiceProvider();
     }

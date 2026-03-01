@@ -10,9 +10,19 @@ namespace demos_applications_winui.ViewModels;
 
 public partial class AllNotesViewModel(
     INotesService notesService,
-    INavigationService navigationService) : ObservableObject
+    INavigationService navigationService) : ObservableObject, INavigable
 {
     public ObservableCollection<Note> Notes { get; } = [];
+
+    public async Task OnNavigatedToAsync(NavigationContext context)
+    {
+        await LoadNotesCommand.ExecuteAsync(null);
+    }
+
+    public void OnNavigatedFrom()
+    {
+        LoadNotesCommand.Cancel();
+    }
 
     [RelayCommand]
     private async Task LoadNotesAsync()

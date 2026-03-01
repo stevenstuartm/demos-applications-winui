@@ -9,7 +9,7 @@ namespace demos_applications_winui.ViewModels;
 
 public partial class NoteViewModel(
     INotesService notesService,
-    INavigationService navigationService) : ObservableObject
+    INavigationService navigationService) : ObservableObject, INavigable
 {
     [ObservableProperty]
     public partial string Text { get; set; }
@@ -20,11 +20,22 @@ public partial class NoteViewModel(
     [ObservableProperty]
     public partial string Filename { get; set; }
 
-    public void LoadNote(Note note)
+    public Task OnNavigatedToAsync(NavigationContext context)
     {
-        Text = note.Text;
-        Date = note.Date;
-        Filename = note.Filename;
+        if (context.Parameter is Note note)
+        {
+            Text = note.Text;
+            Date = note.Date;
+            Filename = note.Filename;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public void OnNavigatedFrom()
+    {
+        SaveCommand.Cancel();
+        DeleteCommand.Cancel();
     }
 
     [RelayCommand]
