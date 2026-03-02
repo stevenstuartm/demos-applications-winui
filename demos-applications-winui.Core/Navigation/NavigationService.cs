@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using demos_applications_winui.Core.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 
 namespace demos_applications_winui.Core.Navigation;
 
-public class NavigationService(
+public partial class NavigationService(
     IServiceProvider serviceProvider,
     IEnumerable<INavigationGuard> guards,
     NavigationState navigationState,
-    AppConfig config) : INavigationService
+    NavigationConfig navigationConfig,
+    ILogger<NavigationService> logger) : INavigationService
 {
-    private readonly Type _defaultPage = config.Navigation.DefaultPage
-        ?? throw new InvalidOperationException(
-            "NavigationConfig.DefaultPage must be configured via AddAppConfig.");
-
     private Frame? _frame;
     private readonly Stack<NavigationStackEntry> _backStack = new();
     private object? _currentParameter;
@@ -24,14 +23,19 @@ public class NavigationService(
 
     public void SetFrame(Frame frame) => _frame = frame;
 
-    public void GoBack()
+    public async Task GoBackAsync()
     {
         if (_frame is null || _backStack.Count == 0 || _navigationInProgress) return;
+
+        if (!await CheckCanNavigateFromAsync())
+            return;
 
         _navigationInProgress = true;
 
         try
         {
+            LogNavigatingBack();
+
             if (_frame.Content is INavigable currentNavigable)
                 currentNavigable.OnNavigatedFrom();
 
@@ -42,7 +46,14 @@ public class NavigationService(
             UpdateNavigationState(entry.PageType);
 
             if (page is INavigable navigable)
-                _ = navigable.OnNavigatedToAsync(new NavigationContext(entry.Parameter, NavigationMode.Back));
+                await navigable.OnNavigatedToAsync(new NavigationContext(entry.Parameter, NavigationMode.Back));
+
+            LogNavigatedBackTo(entry.PageType.Name);
+        }
+        catch (Exception ex)
+        {
+            LogGoBackFailed(ex);
+            throw;
         }
         finally
         {
@@ -50,35 +61,46 @@ public class NavigationService(
         }
     }
 
-    public void NavigateTo<TPage>(object? parameter = null) where TPage : Page
+    public async Task NavigateToAsync<TPage>(object? parameter = null) where TPage : Page
     {
         if (_frame is null || _navigationInProgress) return;
+
+        if (!await CheckCanNavigateFromAsync())
+            return;
 
         var (allowed, targetType, targetParam) = CheckGuards(typeof(TPage), parameter);
         if (!allowed) return;
 
         var isRedirect = targetType != typeof(TPage);
-        NavigateCore(targetType, targetParam, clearBackStack: isRedirect);
+        await NavigateCoreAsync(targetType, targetParam, clearBackStack: isRedirect);
     }
 
-    public void NavigateAndReplace<TPage>(object? parameter = null) where TPage : Page
+    public async Task NavigateAndReplaceAsync<TPage>(object? parameter = null) where TPage : Page
     {
         if (_frame is null || _navigationInProgress) return;
 
         var (allowed, targetType, targetParam) = CheckGuards(typeof(TPage), parameter);
         if (!allowed) return;
 
-        NavigateCore(targetType, targetParam, clearBackStack: true);
+        await NavigateCoreAsync(targetType, targetParam, clearBackStack: true);
     }
 
-    public void NavigateToDefault()
+    public async Task NavigateToDefaultAsync()
     {
         if (_frame is null || _navigationInProgress) return;
 
-        var (allowed, targetType, targetParam) = CheckGuards(_defaultPage, null);
+        var (allowed, targetType, targetParam) = CheckGuards(navigationConfig.DefaultPage, null);
         if (!allowed) return;
 
-        NavigateCore(targetType, targetParam, clearBackStack: true);
+        await NavigateCoreAsync(targetType, targetParam, clearBackStack: true);
+    }
+
+    private async Task<bool> CheckCanNavigateFromAsync()
+    {
+        if (_frame?.Content is INavigable currentNavigable)
+            return await currentNavigable.CanNavigateFromAsync();
+
+        return true;
     }
 
     /// <summary>
@@ -90,7 +112,7 @@ public class NavigationService(
     private (bool allowed, Type pageType, object? parameter) CheckGuards(
         Type pageType, object? parameter)
     {
-        var requestedGuards = config.Navigation.GetGuardsForPage(pageType);
+        var requestedGuards = navigationConfig.GetGuardsForPage(pageType);
 
         if (requestedGuards.Count == 0)
             return (true, pageType, parameter);
@@ -114,12 +136,14 @@ public class NavigationService(
         return (true, pageType, parameter);
     }
 
-    private void NavigateCore(Type pageType, object? parameter, bool clearBackStack)
+    private async Task NavigateCoreAsync(Type pageType, object? parameter, bool clearBackStack)
     {
         _navigationInProgress = true;
 
         try
         {
+            LogNavigatingTo(pageType.Name, clearBackStack);
+
             if (_frame!.Content is Page currentPage)
             {
                 if (currentPage is INavigable currentNavigable)
@@ -138,7 +162,14 @@ public class NavigationService(
             UpdateNavigationState(pageType);
 
             if (page is INavigable navigable)
-                _ = navigable.OnNavigatedToAsync(new NavigationContext(parameter, NavigationMode.New));
+                await navigable.OnNavigatedToAsync(new NavigationContext(parameter, NavigationMode.New));
+
+            LogNavigatedTo(pageType.Name);
+        }
+        catch (Exception ex)
+        {
+            LogNavigationFailed(ex, pageType.Name);
+            throw;
         }
         finally
         {
@@ -152,4 +183,22 @@ public class NavigationService(
         navigationState.CurrentPageType = currentPageType;
         navigationState.BackStack = _backStack.Reverse().ToList();
     }
+
+    [LoggerMessage(EventId = 1000, Level = LogLevel.Debug, Message = "Navigating back")]
+    partial void LogNavigatingBack();
+
+    [LoggerMessage(EventId = 1001, Level = LogLevel.Debug, Message = "Navigated back to {PageType}")]
+    partial void LogNavigatedBackTo(string pageType);
+
+    [LoggerMessage(EventId = 1002, Level = LogLevel.Error, Message = "GoBack navigation failed")]
+    partial void LogGoBackFailed(Exception ex);
+
+    [LoggerMessage(EventId = 1003, Level = LogLevel.Debug, Message = "Navigating to {PageType}, clearBackStack={ClearBackStack}")]
+    partial void LogNavigatingTo(string pageType, bool clearBackStack);
+
+    [LoggerMessage(EventId = 1004, Level = LogLevel.Information, Message = "Navigated to {PageType}")]
+    partial void LogNavigatedTo(string pageType);
+
+    [LoggerMessage(EventId = 1005, Level = LogLevel.Error, Message = "Navigation to {PageType} failed")]
+    partial void LogNavigationFailed(Exception ex, string pageType);
 }

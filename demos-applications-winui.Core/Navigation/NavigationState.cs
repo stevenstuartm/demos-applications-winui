@@ -13,5 +13,5 @@ public partial class NavigationState : ObservableObject, INavigationState
     public partial Type? CurrentPageType { get; internal set; }
 
     [ObservableProperty]
-    public partial IReadOnlyList<NavigationStackEntry> BackStack { get; internal set; } = [];
+    public partial IReadOnlyList<NavigationStackEntry>? BackStack { get; internal set; }
 }

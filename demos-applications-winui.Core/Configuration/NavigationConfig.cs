@@ -16,7 +16,7 @@ namespace demos_applications_winui.Core.Configuration;
 /// </example>
 public class NavigationConfig
 {
-    public Type? DefaultPage { get; set; }
+    public required Type DefaultPage { get; set; }
 
     private readonly List<GuardRegistration> _guards = [];
     private readonly Dictionary<Type, HashSet<string>> _resolvedCache = [];
@@ -46,12 +46,12 @@ public class NavigationConfig
         {
             if (reg.IsGlobal)
             {
-                if (!reg.ExcludedPages.Contains(pageType))
+                if (reg.ExcludedPages?.Contains(pageType) != true)
                     guards.Add(reg.GuardName);
             }
             else
             {
-                if (reg.IncludedPages.Contains(pageType))
+                if (reg.IncludedPages?.Contains(pageType) == true)
                     guards.Add(reg.GuardName);
             }
         }

@@ -8,5 +8,5 @@ public interface INavigationState : INotifyPropertyChanged
 {
     bool CanGoBack { get; }
     Type? CurrentPageType { get; }
-    IReadOnlyList<NavigationStackEntry> BackStack { get; }
+    IReadOnlyList<NavigationStackEntry>? BackStack { get; }
 }

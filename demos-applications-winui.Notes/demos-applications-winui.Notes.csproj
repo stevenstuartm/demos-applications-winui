@@ -20,6 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\quill-editor.html" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\quill.js" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\quill.snow.css" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\demos-applications-winui.Core\demos-applications-winui.Core.csproj" />
   </ItemGroup>
 

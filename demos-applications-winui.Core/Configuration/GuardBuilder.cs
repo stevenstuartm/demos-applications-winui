@@ -28,7 +28,8 @@ public class GuardBuilder
         var registration = new GuardRegistration
         {
             GuardName = _guardName,
-            IsGlobal = true
+            IsGlobal = true,
+            ExcludedPages = new System.Collections.Generic.HashSet<Type>()
         };
         _config.AddGuard(registration);
         return new GlobalGuardBuilder(_config, registration);

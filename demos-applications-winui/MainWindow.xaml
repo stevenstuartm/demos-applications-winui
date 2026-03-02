@@ -13,7 +13,7 @@
         <MicaBackdrop Kind="Base"/>
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         
         <Grid.RowDefinitions>
             <!-- Title Bar -->
@@ -51,6 +51,8 @@
                 </TransitionCollection>
             </Frame.ContentTransitions>
         </Frame>
+
+        <!-- Toast overlay (DI-resolved, added in code-behind) -->
 
     </Grid>
     

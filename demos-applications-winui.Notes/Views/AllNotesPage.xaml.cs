@@ -19,11 +19,11 @@ public sealed partial class AllNotesPage : Page, INavigable
     public Task OnNavigatedToAsync(NavigationContext context) => ViewModel.OnNavigatedToAsync(context);
     public void OnNavigatedFrom() => ViewModel.OnNavigatedFrom();
 
-    private void ItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
+    private async void ItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
         if (args.InvokedItem is Note note)
         {
-            ViewModel.OpenNoteCommand.Execute(note);
+            await ViewModel.OpenNoteCommand.ExecuteAsync(note);
         }
     }
 }

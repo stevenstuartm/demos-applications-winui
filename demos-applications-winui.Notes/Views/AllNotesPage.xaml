@@ -23,12 +23,13 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="{x:Bind Text}" Margin="12,8"
+                    <TextBlock Text="{x:Bind Title}" Margin="12,8"
+                       Style="{StaticResource SubtitleTextBlockStyle}"
                        TextWrapping="Wrap"
                        TextTrimming="WordEllipsis"/>
 
                     <Border Grid.Row="1" Padding="8,6,0,6" Background="{ThemeResource SubtleFillColorSecondaryBrush}">
-                        <TextBlock Text="{x:Bind Date}"
+                        <TextBlock Text="{x:Bind ModifiedDate}"
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </Border>
@@ -61,8 +62,7 @@
                 <UniformGridLayout MinItemWidth="200"
                            MinColumnSpacing="12"
                            MinRowSpacing="12"
-                           ItemsJustification="Start"
-/>
+                           ItemsJustification="Start"/>
             </ItemsView.Layout>
         </ItemsView>
     </Grid>

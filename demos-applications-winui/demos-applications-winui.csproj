@@ -37,6 +37,8 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.251221100">
       <PrivateAssets>all</PrivateAssets>
@@ -45,11 +47,14 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\demos-applications-winui.Auth\demos-applications-winui.Auth.csproj" />
     <ProjectReference Include="..\demos-applications-winui.Core\demos-applications-winui.Core.csproj" />
     <ProjectReference Include="..\demos-applications-winui.Notes\demos-applications-winui.Notes.csproj" />
+    <ProjectReference Include="..\demos-applications-winui.Toolkit\demos-applications-winui.Toolkit.csproj" />
   </ItemGroup>
 
   <!--

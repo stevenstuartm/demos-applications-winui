@@ -9,10 +9,10 @@ namespace demos_applications_winui.Auth.ViewModels;
 public partial class LoginViewModel(IAuthService authService) : ObservableObject, INavigable
 {
     [ObservableProperty]
-    public partial string Username { get; set; } = string.Empty;
+    public partial string? Username { get; set; }
 
     [ObservableProperty]
-    public partial string Password { get; set; } = string.Empty;
+    public partial string? Password { get; set; }
 
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
@@ -22,8 +22,8 @@ public partial class LoginViewModel(IAuthService authService) : ObservableObject
 
     public Task OnNavigatedToAsync(NavigationContext context)
     {
-        Username = string.Empty;
-        Password = string.Empty;
+        Username = null;
+        Password = null;
         ErrorMessage = null;
         HasError = false;
         return Task.CompletedTask;
@@ -31,16 +31,16 @@ public partial class LoginViewModel(IAuthService authService) : ObservableObject
 
     public void OnNavigatedFrom()
     {
-        Username = string.Empty;
-        Password = string.Empty;
+        Username = null;
+        Password = null;
         ErrorMessage = null;
         HasError = false;
     }
 
     private bool CanLogin() => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
 
-    partial void OnUsernameChanged(string value) => LoginCommand.NotifyCanExecuteChanged();
-    partial void OnPasswordChanged(string value) => LoginCommand.NotifyCanExecuteChanged();
+    partial void OnUsernameChanged(string? value) => LoginCommand.NotifyCanExecuteChanged();
+    partial void OnPasswordChanged(string? value) => LoginCommand.NotifyCanExecuteChanged();
 
     [RelayCommand(CanExecute = nameof(CanLogin))]
     private async Task LoginAsync()
@@ -48,7 +48,7 @@ public partial class LoginViewModel(IAuthService authService) : ObservableObject
         ErrorMessage = null;
         HasError = false;
 
-        var result = await authService.LoginAsync(Username, Password);
+        var result = await authService.LoginAsync(Username!, Password!);
 
         if (!result.Success)
         {

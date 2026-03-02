@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml.Controls;
 using demos_applications_winui.Auth.Services;
 using demos_applications_winui.Core.Auth;
 using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Toast;
 
 namespace demos_applications_winui;
 
@@ -18,7 +20,9 @@ public sealed partial class MainWindow : Window
         INavigationService navigationService,
         INavigationState navigationState,
         IAuthState authState,
-        IAuthService authService)
+        IAuthService authService,
+        IDialogProvider dialogProvider,
+        ToastPresenter toastPresenter)
     {
         _navigationService = navigationService;
         _authService = authService;
@@ -30,12 +34,17 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
+        Grid.SetRow(toastPresenter, 1);
+        RootGrid.Children.Add(toastPresenter);
+
         navigationService.SetFrame(rootFrame);
+
+        rootFrame.Loaded += (_, _) => dialogProvider.SetXamlRoot(rootFrame.XamlRoot);
     }
 
-    private void AppTitleBar_BackRequested(TitleBar sender, object args)
+    private async void AppTitleBar_BackRequested(TitleBar sender, object args)
     {
-        _navigationService.GoBack();
+        await _navigationService.GoBackAsync();
     }
 
     private void LogoutButton_Click(object sender, RoutedEventArgs e)

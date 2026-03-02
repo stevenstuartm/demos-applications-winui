@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://app.local/quill.snow.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+        #editor-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .ql-toolbar {
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            flex-shrink: 0;
+        }
+        .ql-container {
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .ql-editor {
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .ql-editor.ql-blank::before {
+            font-style: normal;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div id="editor-container">
+        <div id="editor"></div>
+    </div>
+
+    <script src="https://app.local/quill.js"></script>
+    <script>
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            placeholder: 'Start writing your note...',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ color: [] }, { background: [] }],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ indent: '-1' }, { indent: '+1' }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // C# -> JS: Set HTML content
+        function setContent(html) {
+            quill.root.innerHTML = html || '';
+        }
+
+        // C# -> JS: Get HTML content
+        function getContent() {
+            const html = quill.root.innerHTML;
+            return html === '<p><br></p>' ? '' : html;
+        }
+
+        // C# -> JS: Toggle read-only mode
+        function setReadOnly(readOnly) {
+            quill.enable(!readOnly);
+            document.querySelector('.ql-toolbar').style.display = readOnly ? 'none' : '';
+        }
+
+        // C# -> JS: Insert an image at current cursor position
+        function insertImage(url) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', url, 'user');
+            quill.setSelection(range.index + 1);
+        }
+
+        // JS -> C#: Notify content changed (debounced)
+        let debounceTimer;
+        quill.on('text-change', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                window.chrome.webview.postMessage(JSON.stringify({
+                    type: 'contentChanged',
+                    html: getContent()
+                }));
+            }, 300);
+        });
+
+        // Signal ready
+        window.chrome.webview.postMessage(JSON.stringify({ type: 'ready' }));
+    </script>
+</body>
+</html>

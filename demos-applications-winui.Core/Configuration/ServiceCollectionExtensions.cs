@@ -5,13 +5,25 @@ namespace demos_applications_winui.Core.Configuration;
 
 public static class ConfigurationServiceCollectionExtensions
 {
-    public static IServiceCollection AddAppConfig(
-        this IServiceCollection services,
-        Action<AppConfig> configure)
+    public static IHostConfig AddHostConfig(this IServiceCollection services)
     {
-        var config = new AppConfig();
-        configure(config);
+        var config = HostConfigResolver.Resolve();
+        services.AddSingleton<IHostConfig>(config);
+        return config;
+    }
+
+    public static LoggingConfig AddLoggingConfig(this IServiceCollection services)
+    {
+        var config = LoggingConfigResolver.Resolve();
         services.AddSingleton(config);
-        return services;
+        return config;
+    }
+
+    public static NavigationConfig AddNavigationConfig(this IServiceCollection services, Type defaultPage, Action<NavigationConfig>? configure = null)
+    {
+        var config = new NavigationConfig { DefaultPage = defaultPage };
+        configure?.Invoke(config);
+        services.AddSingleton(config);
+        return config;
     }
 }

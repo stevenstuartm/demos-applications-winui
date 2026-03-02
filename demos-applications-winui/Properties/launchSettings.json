@@ -1,10 +1,18 @@
 {
   "profiles": {
     "demos-applications-winui (Package)": {
-      "commandName": "MsixPackage"
+      "commandName": "MsixPackage",
+      "environmentVariables": {
+        "APP_STAGE": "Local",
+        "APP_ENVIRONMENT": "Dev"
+      }
     },
     "demos-applications-winui (Unpackaged)": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "APP_STAGE": "Local",
+        "APP_ENVIRONMENT": "Dev"
+      }
     }
   }
 }

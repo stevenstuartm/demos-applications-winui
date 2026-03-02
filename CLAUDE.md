@@ -30,7 +30,7 @@ Dependency graph: **App → Auth → Core**, **App → Notes → Core** (and App
 Namespaces use underscores (matching the project naming convention):
 - `demos_applications_winui` — App root
 - `demos_applications_winui.Core.Navigation` — navigation contracts and NavigationService implementation
-- `demos_applications_winui.Core.Configuration` — AppConfig, NavigationConfig, guard routing builders
+- `demos_applications_winui.Core.Configuration` — IHostConfig/HostConfig, NavigationConfig, LoggingConfig, guard routing builders
 - `demos_applications_winui.Core.Auth` — IAuthState contract
 - `demos_applications_winui.Auth.{Models,Services,Navigation,ViewModels,Views}` — Auth domain
 - `demos_applications_winui.Notes.{Models,Services,ViewModels,Views}` — Notes domain
@@ -55,7 +55,7 @@ Custom navigation system — does **not** use `Frame.Navigate()`. Instead, `Navi
 Guards intercept navigation to block or redirect. The system uses a **config-based routing model** (no reflection, AOT-safe) with a fluent API configured in `App.xaml.cs`:
 
 ```csharp
-config.Navigation
+navigationConfig
     .Guard(NavigationGuardNames.IsAuthenticated).ForAll().Except(typeof(LoginPage))
     .Guard(NavigationGuardNames.AdminRole).ForPages(typeof(AdminPage));
 ```
@@ -68,6 +68,22 @@ Key design:
 - `NavigationGuardContext` provides target page, source page, and parameter to guard logic
 - Guard-to-page resolution is cached per page type in `NavigationConfig.GetGuardsForPage()`
 - Fluent builders (`GuardBuilder` → `GlobalGuardBuilder`) enforce valid combinations at compile time with `internal` constructors
+
+### Configuration
+
+Configuration is split into focused, independently-registered types — no single global config object.
+
+| Type | Purpose | Registered As |
+|------|---------|---------------|
+| `IHostConfig` / `HostConfig` | Stage + Environment | `IHostConfig` (read-only) + `HostConfig` (mutable, `internal set`) |
+| `NavigationConfig` | Guard routing + default page | concrete singleton |
+| `LoggingConfig` | Serilog file settings | concrete singleton |
+
+**Stage/Environment resolution:** `HostConfigResolver.Resolve()` reads environment variables `APP_STAGE` and `APP_ENVIRONMENT` with safe defaults (`Local`/`Dev`). Set via `launchSettings.json` for local dev, deployment pipeline for Stage/Prod.
+
+**Async startup configs:** `IStartupConfigProvider` is the extensibility hook for API-sourced configs. Implementations are resolved and called in `OnLaunched` before first navigation. Currently no providers are registered.
+
+**Domain configs:** When a domain needs its own config, define it in the domain project (e.g., `NotesConfig` in Notes), register via `AddNotes(Action<NotesConfig>?)`. Follow the same `IFooConfig` (read-only) / `FooConfig` (mutable) pattern if the config needs cross-domain injection.
 
 ### MVVM Pattern
 

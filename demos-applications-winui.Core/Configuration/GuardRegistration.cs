@@ -12,6 +12,6 @@ internal record GuardRegistration
 {
     public required string GuardName { get; init; }
     public bool IsGlobal { get; init; }
-    public HashSet<Type> ExcludedPages { get; set; } = [];
-    public HashSet<Type> IncludedPages { get; init; } = [];
+    public HashSet<Type>? ExcludedPages { get; set; }
+    public HashSet<Type>? IncludedPages { get; init; }
 }
