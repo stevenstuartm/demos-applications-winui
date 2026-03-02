@@ -10,6 +10,12 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace demos_applications_winui.Toolkit.Navigation;
 
+/// <summary>
+/// Manages page navigation by setting DI-resolved singleton pages as <c>Frame.Content</c>.
+/// Evaluates guards from <see cref="NavigationConfig"/> before each navigation, maintains
+/// a manual back stack, and drives <see cref="INavigable"/> lifecycle callbacks.
+/// Uses a reentrancy flag (<c>_navigationInProgress</c>) to prevent overlapping navigations.
+/// </summary>
 public partial class NavigationService(
     IServiceProvider serviceProvider,
     IEnumerable<INavigationGuard> guards,

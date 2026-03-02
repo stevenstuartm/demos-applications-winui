@@ -6,6 +6,11 @@ using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.ViewModels;
 
+/// <summary>
+/// Drives the login form. Clears credentials on both entry and exit to avoid
+/// stale data in the singleton page. The <see cref="LoginCommand"/> is only
+/// enabled when both username and password are non-empty.
+/// </summary>
 public partial class LoginViewModel(IAuthService authService) : ObservableObject, INavigable
 {
     [ObservableProperty]

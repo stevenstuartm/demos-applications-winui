@@ -6,6 +6,11 @@ using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Providers;
 
+/// <summary>
+/// Shows WinUI <see cref="ContentDialog"/> confirmations. Requires
+/// <see cref="SetXamlRoot"/> to be called after the root frame loads —
+/// ContentDialog cannot render without a valid XamlRoot.
+/// </summary>
 public class DialogProvider : IDialogProvider
 {
     private XamlRoot? _xamlRoot;

@@ -8,6 +8,11 @@ using CapturedPhoto = demos_applications_winui.Toolkit.Platform.CapturedPhoto;
 
 namespace demos_applications_winui.Toolkit.Providers;
 
+/// <summary>
+/// Launches the system camera capture UI. Uses a <c>using</c> alias to resolve
+/// the name collision between <see cref="Platform.CapturedPhoto"/> and
+/// <see cref="Windows.Media.Capture.CapturedPhoto"/>.
+/// </summary>
 public partial class CameraProvider(
     IWindowHandleProvider windowHandleProvider,
     ILogger<CameraProvider> logger) : ICameraProvider

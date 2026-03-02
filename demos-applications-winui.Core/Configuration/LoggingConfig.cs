@@ -1,5 +1,10 @@
 namespace demos_applications_winui.Core.Configuration;
 
+/// <summary>
+/// Serilog rolling-file configuration. Resolved at startup by <see cref="LoggingConfigResolver"/>
+/// and consumed by the App composition root when building the logging pipeline.
+/// Null properties signal "use consumer default".
+/// </summary>
 public class LoggingConfig
 {
     /// <summary>

@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace demos_applications_winui.Notes;
 
+/// <summary>
+/// Registers all Notes domain services, view models, and pages as singletons.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddNotes(this IServiceCollection services)

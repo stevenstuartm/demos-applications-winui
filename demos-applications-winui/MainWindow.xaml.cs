@@ -8,6 +8,11 @@ using demos_applications_winui.Toolkit.Toast;
 
 namespace demos_applications_winui;
 
+/// <summary>
+/// Application shell. Sets up the custom title bar, injects the toast presenter
+/// into the visual tree, binds the content frame to <see cref="INavigationService"/>,
+/// and wires <see cref="IDialogProvider.SetXamlRoot"/> once the frame loads.
+/// </summary>
 public sealed partial class MainWindow : Window
 {
     private readonly INavigationService _navigationService;

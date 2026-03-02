@@ -3,6 +3,10 @@ using demos_applications_winui.Core.Auth;
 
 namespace demos_applications_winui.Auth.Models;
 
+/// <summary>
+/// Mutable authentication state. <see cref="AuthService"/> calls <see cref="SetAuthenticated"/>
+/// and <see cref="Clear"/>; all other consumers see the read-only <see cref="IAuthState"/> projection.
+/// </summary>
 public partial class AuthState : ObservableObject, IAuthState
 {
     [ObservableProperty]

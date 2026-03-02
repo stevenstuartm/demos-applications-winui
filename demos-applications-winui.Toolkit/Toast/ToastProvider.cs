@@ -8,6 +8,11 @@ using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Toast;
 
+/// <summary>
+/// Manages toast lifecycle: creation, capacity enforcement (max 3 visible),
+/// and auto-dismiss via cancellable timers. Ephemeral toasts dismiss after 3 seconds;
+/// persistent toasts stay until explicitly dismissed.
+/// </summary>
 public partial class ToastProvider(ToastState toastState, ILogger<ToastProvider> logger) : IToastProvider
 {
     private const int MaxVisible = 3;

@@ -7,6 +7,11 @@ using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.Services;
 
+/// <summary>
+/// Mock authentication service using hardcoded credentials. On successful login,
+/// updates <see cref="AuthState"/> and navigates to the default page.
+/// Replace credential validation with a real identity provider for production use.
+/// </summary>
 public partial class AuthService(
     AuthState AuthState,
     INavigationService navigationService,

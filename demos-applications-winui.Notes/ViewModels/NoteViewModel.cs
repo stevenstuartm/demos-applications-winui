@@ -13,6 +13,13 @@ using demos_applications_winui.Notes.Services;
 
 namespace demos_applications_winui.Notes.ViewModels;
 
+/// <summary>
+/// Detail/edit VM for a single note. Uses <see cref="ObservableValidator"/> for
+/// title validation, dirty-tracking via <see cref="_suppressDirtyTracking"/> to
+/// distinguish user edits from programmatic loads, and
+/// <see cref="INavigable.CanNavigateFromAsync"/> to prompt before discarding unsaved changes.
+/// The <see cref="IHtmlEditorBridge"/> is set by the view after WebView2 initializes.
+/// </summary>
 public partial class NoteViewModel(
     INotesService notesService,
     INavigationService navigationService,

@@ -8,6 +8,11 @@ using Windows.Storage;
 
 namespace demos_applications_winui.Notes.Services;
 
+/// <summary>
+/// File-system storage client. Each note lives in its own folder as <c>note.json</c>
+/// with an optional <c>attachments/</c> subfolder. Uses <see cref="NoteJsonContext"/>
+/// for AOT-safe serialization. File names are prefixed with a GUID to avoid collisions.
+/// </summary>
 public class NotesClient : INotesClient
 {
     private static string? _notesRootPath;

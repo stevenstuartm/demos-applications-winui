@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace demos_applications_winui.Toolkit.Toast;
 
+/// <summary>
+/// Mutable backing store for active toasts. Mutations are <c>internal</c> —
+/// only <see cref="ToastProvider"/> adds and removes items.
+/// </summary>
 public class ToastState : IToastState
 {
     private readonly ObservableCollection<ToastItem> _toasts = new();

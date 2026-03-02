@@ -6,6 +6,10 @@ using demos_applications_winui.Notes.Models;
 
 namespace demos_applications_winui.Notes.Services;
 
+/// <summary>
+/// Orchestrates note persistence and attachment management. Classifies attachment
+/// types by file extension and delegates raw I/O to <see cref="INotesClient"/>.
+/// </summary>
 public class NotesService(INotesClient notesClient) : INotesService
 {
     private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)

@@ -9,6 +9,13 @@ using Microsoft.Web.WebView2.Core;
 
 namespace demos_applications_winui.Notes.Views;
 
+/// <summary>
+/// Bridges C# and the Quill.js rich-text editor running inside a WebView2 control.
+/// Local assets are served via a virtual host mapping (<c>app.local</c>).
+/// C# → JS calls use <c>ExecuteScriptAsync</c>; JS → C# messages use
+/// <c>window.chrome.webview.postMessage</c> with JSON payloads (<c>ready</c>,
+/// <c>contentChanged</c>).
+/// </summary>
 public class HtmlEditorBridge : IHtmlEditorBridge
 {
     private readonly WebView2 _webView;

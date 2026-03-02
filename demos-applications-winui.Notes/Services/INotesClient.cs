@@ -5,6 +5,10 @@ using demos_applications_winui.Notes.Models;
 
 namespace demos_applications_winui.Notes.Services;
 
+/// <summary>
+/// Low-level storage operations for notes. Reads/writes per-note folders under
+/// <c>ApplicationData.Current.LocalFolder/notes/{noteId}/</c>.
+/// </summary>
 public interface INotesClient
 {
     Task<IReadOnlyList<Note>> GetAllNotesAsync();

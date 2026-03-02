@@ -18,6 +18,11 @@ public sealed partial class NotePage : Page, INavigable
         Loaded += OnLoaded;
     }
 
+    /// <summary>
+    /// Initializes the WebView2 editor bridge on first load. The null-check guards
+    /// against re-initialization since this is a singleton page that may be Loaded
+    /// multiple times across navigations.
+    /// </summary>
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         if (_bridge is not null) return;

@@ -8,6 +8,11 @@ using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Providers;
 
+/// <summary>
+/// Opens the system file picker, initializing it with the app's HWND
+/// (required by WinUI desktop apps). Converts <see cref="Windows.Storage.StorageFile"/>
+/// results into platform-independent <see cref="PickedFile"/> records.
+/// </summary>
 public class FilePickerProvider(IWindowHandleProvider windowHandleProvider) : IFilePickerProvider
 {
     public async Task<IReadOnlyList<PickedFile>> PickFilesAsync(IReadOnlyList<string> fileTypeFilters)

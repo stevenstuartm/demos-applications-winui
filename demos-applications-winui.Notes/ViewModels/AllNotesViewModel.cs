@@ -10,6 +10,11 @@ using demos_applications_winui.Notes.Views;
 
 namespace demos_applications_winui.Notes.ViewModels;
 
+/// <summary>
+/// Lists all notes and handles creation/navigation. Reloads the full note list
+/// on every <see cref="INavigable.OnNavigatedToAsync"/> to reflect changes
+/// made on the detail page.
+/// </summary>
 public partial class AllNotesViewModel(
     INotesService notesService,
     INavigationService navigationService,

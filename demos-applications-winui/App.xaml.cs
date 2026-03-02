@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,6 +19,11 @@ using demos_applications_winui.Toolkit.Providers;
 
 namespace demos_applications_winui;
 
+/// <summary>
+/// Composition root and application entry point. Configures all DI services,
+/// wires global exception handlers (UI + background tasks), and triggers
+/// initial navigation.
+/// </summary>
 public partial class App : Application
 {
     private Window? _window;
@@ -41,14 +45,6 @@ public partial class App : Application
     {
         _window = Services.GetRequiredService<MainWindow>();
         _window.Activate();
-
-        // Run async startup config providers (API-sourced configs, etc.)
-        var providers = Services.GetServices<IStartupConfigProvider>()
-            .OrderBy(p => p.Order);
-        foreach (var provider in providers)
-        {
-            await provider.LoadAsync();
-        }
 
         var navigationService = Services.GetRequiredService<INavigationService>();
         await navigationService.NavigateToDefaultAsync();

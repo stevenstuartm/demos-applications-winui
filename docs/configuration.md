@@ -48,22 +48,6 @@ services.AddNavigationConfig(typeof(AllNotesPage), config =>
 });
 ```
 
-## Async Startup Configs
-
-`IStartupConfigProvider` is the extensibility hook for API-sourced configs that need async loading:
-
-```csharp
-public interface IStartupConfigProvider
-{
-    int Order => 0;  // lower runs first
-    Task LoadAsync(CancellationToken cancellationToken = default);
-}
-```
-
-Implementations are resolved and called in `App.OnLaunched` before first navigation. Currently no providers are registered.
-
-Implementations should be resilient: cache last-known-good values, timeout gracefully, never throw.
-
 ## Domain Config Pattern
 
 When a domain needs its own config:

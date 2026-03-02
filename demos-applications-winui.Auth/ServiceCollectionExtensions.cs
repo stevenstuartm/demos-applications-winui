@@ -9,6 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace demos_applications_winui.Auth;
 
+/// <summary>
+/// Registers all Auth domain services: <see cref="AuthState"/>/<see cref="IAuthState"/>,
+/// <see cref="IAuthService"/>, the <see cref="IsAuthenticatedGuard"/>, and the login page/VM.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAuth(this IServiceCollection services)

@@ -5,6 +5,10 @@ using demos_applications_winui.Notes.Models;
 
 namespace demos_applications_winui.Notes.Services;
 
+/// <summary>
+/// Domain-level note operations. Adds business logic on top of <see cref="INotesClient"/> —
+/// e.g., attachment type classification from file extension.
+/// </summary>
 public interface INotesService
 {
     Task<IReadOnlyList<Note>> LoadNotesAsync();
