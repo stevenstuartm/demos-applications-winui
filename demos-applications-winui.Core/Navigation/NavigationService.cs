@@ -1,24 +1,26 @@
 using System;
 using System.Collections.Generic;
-using CommunityToolkit.Mvvm.ComponentModel;
-using demos_applications_winui.Core.Navigation;
+using System.Linq;
+using demos_applications_winui.Core.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 
-namespace demos_applications_winui.Services;
+namespace demos_applications_winui.Core.Navigation;
 
-public partial class NavigationService(
+public class NavigationService(
     IServiceProvider serviceProvider,
-    IEnumerable<INavigationGuard> guards) : ObservableObject, INavigationService
+    IEnumerable<INavigationGuard> guards,
+    NavigationState navigationState,
+    AppConfig config) : INavigationService
 {
-    private record NavigationEntry(Type PageType, object? Parameter);
+    private readonly Type _defaultPage = config.Navigation.DefaultPage
+        ?? throw new InvalidOperationException(
+            "NavigationConfig.DefaultPage must be configured via AddAppConfig.");
 
     private Frame? _frame;
-    private readonly Stack<NavigationEntry> _backStack = new();
+    private readonly Stack<NavigationStackEntry> _backStack = new();
     private object? _currentParameter;
     private bool _navigationInProgress;
-
-    public bool CanGoBack => _backStack.Count > 0;
 
     public void SetFrame(Frame frame) => _frame = frame;
 
@@ -37,7 +39,7 @@ public partial class NavigationService(
             var page = (Page)serviceProvider.GetRequiredService(entry.PageType);
             _frame.Content = page;
             _currentParameter = entry.Parameter;
-            OnPropertyChanged(nameof(CanGoBack));
+            UpdateNavigationState(entry.PageType);
 
             if (page is INavigable navigable)
                 _ = navigable.OnNavigatedToAsync(new NavigationContext(entry.Parameter, NavigationMode.Back));
@@ -69,12 +71,38 @@ public partial class NavigationService(
         NavigateCore(targetType, targetParam, clearBackStack: true);
     }
 
+    public void NavigateToDefault()
+    {
+        if (_frame is null || _navigationInProgress) return;
+
+        var (allowed, targetType, targetParam) = CheckGuards(_defaultPage, null);
+        if (!allowed) return;
+
+        NavigateCore(targetType, targetParam, clearBackStack: true);
+    }
+
+    /// <summary>
+    /// Determines which guards apply to the target page using the guard routing
+    /// configured in NavigationConfig. Guard-to-page mappings are resolved from
+    /// startup configuration (no reflection) and cached per page type.
+    /// Only guards whose Name matches a configured mapping are evaluated.
+    /// </summary>
     private (bool allowed, Type pageType, object? parameter) CheckGuards(
         Type pageType, object? parameter)
     {
+        var requestedGuards = config.Navigation.GetGuardsForPage(pageType);
+
+        if (requestedGuards.Count == 0)
+            return (true, pageType, parameter);
+
+        var context = new NavigationGuardContext(pageType, navigationState.CurrentPageType, parameter);
+
         foreach (var guard in guards)
         {
-            var result = guard.CheckNavigation(pageType);
+            if (!requestedGuards.Contains(guard.Name))
+                continue;
+
+            var result = guard.CheckNavigation(context);
             if (!result.Allowed)
             {
                 return result.RedirectPageType is not null
@@ -98,7 +126,7 @@ public partial class NavigationService(
                     currentNavigable.OnNavigatedFrom();
 
                 if (!clearBackStack)
-                    _backStack.Push(new NavigationEntry(currentPage.GetType(), _currentParameter));
+                    _backStack.Push(new NavigationStackEntry(currentPage.GetType(), _currentParameter));
             }
 
             if (clearBackStack)
@@ -107,7 +135,7 @@ public partial class NavigationService(
             var page = (Page)serviceProvider.GetRequiredService(pageType);
             _frame.Content = page;
             _currentParameter = parameter;
-            OnPropertyChanged(nameof(CanGoBack));
+            UpdateNavigationState(pageType);
 
             if (page is INavigable navigable)
                 _ = navigable.OnNavigatedToAsync(new NavigationContext(parameter, NavigationMode.New));
@@ -116,5 +144,12 @@ public partial class NavigationService(
         {
             _navigationInProgress = false;
         }
+    }
+
+    private void UpdateNavigationState(Type currentPageType)
+    {
+        navigationState.CanGoBack = _backStack.Count > 0;
+        navigationState.CurrentPageType = currentPageType;
+        navigationState.BackStack = _backStack.Reverse().ToList();
     }
 }

@@ -47,6 +47,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\demos-applications-winui.Auth\demos-applications-winui.Auth.csproj" />
     <ProjectReference Include="..\demos-applications-winui.Core\demos-applications-winui.Core.csproj" />
     <ProjectReference Include="..\demos-applications-winui.Notes\demos-applications-winui.Notes.csproj" />
   </ItemGroup>

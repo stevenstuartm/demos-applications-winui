@@ -6,9 +6,15 @@ using demos_applications_winui.Notes.ViewModels;
 
 namespace demos_applications_winui.Notes.Views;
 
-public sealed partial class AllNotesPage(AllNotesViewModel viewModel) : Page, INavigable
+public sealed partial class AllNotesPage : Page, INavigable
 {
-    public AllNotesViewModel ViewModel { get; } = viewModel;
+    public AllNotesViewModel ViewModel { get; }
+
+    public AllNotesPage(AllNotesViewModel viewModel)
+    {
+        ViewModel = viewModel;
+        InitializeComponent();
+    }
 
     public Task OnNavigatedToAsync(NavigationContext context) => ViewModel.OnNavigatedToAsync(context);
     public void OnNavigatedFrom() => ViewModel.OnNavigatedFrom();
