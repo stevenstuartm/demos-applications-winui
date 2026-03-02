@@ -94,6 +94,11 @@ public partial class App : Application
             config.Guard(NavigationGuardNames.IsAuthenticated).ForAll().Except(typeof(LoginPage));
         });
 
+        // Domain services — registered before logging so remote log infrastructure
+        // can resolve IAuthState for dynamic token injection.
+        services.AddAuth();
+        services.AddNotes();
+
         // Logging — JSON-driven Serilog configuration, layered by Stage
         var logDirectory = Environment.GetEnvironmentVariable("APP_LOG_DIRECTORY")
             ?? Path.Combine(ApplicationData.Current.LocalFolder.Path, "logs");
@@ -116,6 +121,17 @@ public partial class App : Application
 
             var serilogLogger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
+                // Remote log shipping — uncomment when a log ingestion endpoint is available.
+                // The AuthenticatedHttpClient injects a bearer token from the current user
+                // session on every request. See the Logging/ folder for implementation.
+                // Requires: using demos_applications_winui.Logging;
+                //
+                // .WriteTo.Http(
+                //     requestUri: "https://logs.example.com/ingest",
+                //     httpClient: new AuthenticatedHttpClient(
+                //         new LogAuthTokenProvider(
+                //             services.BuildServiceProvider()
+                //                 .GetRequiredService<Core.Auth.IAuthState>())))
                 .CreateLogger();
 
             builder.AddSerilog(serilogLogger, dispose: true);
@@ -125,10 +141,8 @@ public partial class App : Application
         services.AddToast();
         services.AddProviders();
 
-        // Domain services
+        // Navigation
         services.AddNavigation();
-        services.AddAuth();
-        services.AddNotes();
 
         // Window infrastructure
         services.AddSingleton<IWindowHandleProvider>(sp =>
