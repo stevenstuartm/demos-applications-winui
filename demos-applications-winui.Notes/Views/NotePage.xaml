@@ -54,7 +54,14 @@
                        Visibility="{x:Bind ViewModel.ShowTitleError, Mode=OneWay}"/>
         </StackPanel>
 
-        <WebView2 x:Name="EditorWebView" Grid.Row="2"/>
+        <Grid Grid.Row="2">
+            <WebView2 x:Name="EditorWebView"
+                       Visibility="{x:Bind ViewModel.IsEditorReady, Mode=OneWay}"/>
+            <ProgressRing IsActive="{x:Bind ViewModel.IsEditorLoading, Mode=OneWay}"
+                          Visibility="{x:Bind ViewModel.IsEditorLoading, Mode=OneWay}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"/>
+        </Grid>
 
         <!-- Attachment Gallery -->
         <Border Grid.Row="3" Padding="16,8"

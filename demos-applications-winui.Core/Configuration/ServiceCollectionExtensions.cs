@@ -22,13 +22,6 @@ public static class ConfigurationServiceCollectionExtensions
         return config;
     }
 
-    public static LoggingConfig AddLoggingConfig(this IServiceCollection services)
-    {
-        var config = LoggingConfigResolver.Resolve();
-        services.AddSingleton(config);
-        return config;
-    }
-
     /// <summary>
     /// Creates a <see cref="NavigationConfig"/> with the given default page,
     /// applies the optional guard routing configuration, and registers it.

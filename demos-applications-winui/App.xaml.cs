@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
@@ -87,40 +89,36 @@ public partial class App : Application
 
         // Configuration — each AddXConfig() calls its resolver and registers the result
         var hostConfig = services.AddHostConfig();
-        var loggingConfig = services.AddLoggingConfig();
         services.AddNavigationConfig(typeof(AllNotesPage), config =>
         {
             config.Guard(NavigationGuardNames.IsAuthenticated).ForAll().Except(typeof(LoginPage));
         });
 
-        // Logging — strategy driven by Stage
-        var logDir = loggingConfig.LogDirectory
+        // Logging — JSON-driven Serilog configuration, layered by Stage
+        var logDirectory = Environment.GetEnvironmentVariable("APP_LOG_DIRECTORY")
             ?? Path.Combine(ApplicationData.Current.LocalFolder.Path, "logs");
+
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{hostConfig.Stage}.json", optional: true, reloadOnChange: false)
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Serilog:WriteTo:0:Args:path"] = Path.Combine(logDirectory, "app-.log")
+            })
+            .AddEnvironmentVariables()
+            .Build();
 
         services.AddLogging(builder =>
         {
-            builder.SetMinimumLevel(hostConfig.Stage == AppStage.Local
-                ? LogLevel.Debug
-                : LogLevel.Information);
-
             if (hostConfig.Stage == AppStage.Local)
                 builder.AddDebug();
 
             var serilogLogger = new LoggerConfiguration()
-                .WriteTo.File(
-                    Path.Combine(logDir, loggingConfig.FileNameTemplate ?? "app-.log"),
-                    rollingInterval: RollingInterval.Day,
-                    fileSizeLimitBytes: loggingConfig.FileSizeLimitBytes ?? 10 * 1024 * 1024,
-                    retainedFileCountLimit: loggingConfig.RetainedFileCountLimit ?? 14)
+                .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
             builder.AddSerilog(serilogLogger, dispose: true);
-
-            // Stage/Prod: add remote sink here when ready
-            // if (hostConfig.Stage != AppStage.Local)
-            // {
-            //     builder.AddSerilog(remoteSerilogLogger, dispose: true);
-            // }
         });
 
         // Toolkit — toast component + platform providers

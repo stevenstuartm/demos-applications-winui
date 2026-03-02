@@ -26,16 +26,22 @@ var hostConfig = services.AddHostConfig();  // resolves and registers
 
 ## Logging Config
 
-| Type | Purpose |
-|------|---------|
-| `LoggingConfig` | Serilog file settings: LogDirectory, FileNameTemplate, FileSizeLimitBytes, RetainedFileCountLimit |
-| `LoggingConfigResolver` | Static `Resolve()` method |
+Logging is configured via layered `appsettings.json` files in the App project, read by Serilog's `ReadFrom.Configuration()`.
 
-Properties are nullable — App.xaml.cs provides fallback values when consuming:
-```csharp
-var logDir = loggingConfig.LogDirectory
-    ?? Path.Combine(ApplicationData.Current.LocalFolder.Path, "logs");
-```
+| File | Purpose |
+|------|---------|
+| `appsettings.json` | Base config: File sink, default level (Information), rolling params |
+| `appsettings.Local.json` | Local dev: Debug level |
+| `appsettings.Stage.json` | Stage overrides (add remote sinks here without code changes) |
+| `appsettings.Prod.json` | Prod overrides (add remote sinks here without code changes) |
+
+The resolved `AppStage` determines which override file is loaded. Environment variables can override any Serilog setting (e.g., `Serilog__MinimumLevel__Default=Warning`).
+
+The log file directory defaults to `ApplicationData.Current.LocalFolder.Path/logs/` and can be overridden via the `APP_LOG_DIRECTORY` environment variable.
+
+`IConfiguration` is built and consumed locally in `App.xaml.cs` — it is not registered in DI.
+
+**Array override caveat:** When a stage JSON file includes a `WriteTo` array, it *replaces* (not appends to) the base array. A Prod file that adds a remote sink must also redeclare the File sink.
 
 ## Navigation Config
 
@@ -62,21 +68,20 @@ All in `Core.Configuration.ConfigurationServiceCollectionExtensions`:
 
 ```csharp
 services.AddHostConfig();                              // IHostConfig singleton
-services.AddLoggingConfig();                           // LoggingConfig singleton
 services.AddNavigationConfig(defaultPage, config => { ... });  // NavigationConfig singleton
 ```
 
 ## Logging Strategy
 
-Configured in `App.xaml.cs`, driven by `AppStage`:
+Configured in `App.xaml.cs` via `Serilog.Settings.Configuration`, driven by `AppStage`:
 
-| Stage | Providers |
-|-------|-----------|
-| Local | `AddDebug()` + Serilog rolling file (Debug level) |
-| Stage/Prod | Serilog rolling file only (Information level) + placeholder for remote sink |
+| Stage | Behavior |
+|-------|----------|
+| Local | `AddDebug()` (M.E.Logging provider) + Serilog from `appsettings.Local.json` (Debug level, rolling file) |
+| Stage/Prod | Serilog from `appsettings.{Stage}.json` (Information level, rolling file, add remote sinks via JSON) |
 
 Log files: `ApplicationData.Current.LocalFolder.Path/logs/`
-Packages: `Serilog.Extensions.Logging` + `Serilog.Sinks.File` (App project only)
+Packages: `Serilog.Extensions.Logging`, `Serilog.Settings.Configuration`, `Serilog.Sinks.File`, `Microsoft.Extensions.Configuration.Json`, `Microsoft.Extensions.Configuration.EnvironmentVariables` (App project only)
 
 ## Global Exception Handling
 

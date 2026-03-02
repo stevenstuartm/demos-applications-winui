@@ -32,7 +32,7 @@ Namespaces use underscores (matching the project naming convention):
 
 - `demos_applications_winui` — App root
 - `demos_applications_winui.Core.Navigation` — guard interfaces and guard names (security policy only)
-- `demos_applications_winui.Core.Configuration` — IHostConfig, NavigationConfig, LoggingConfig, guard routing builders
+- `demos_applications_winui.Core.Configuration` — IHostConfig, NavigationConfig, guard routing builders
 - `demos_applications_winui.Core.Auth` — IAuthState contract
 - `demos_applications_winui.Toolkit.Navigation` — INavigationService, NavigationService, INavigable, NavigationState, NavigationContext
 - `demos_applications_winui.Toolkit.Platform` — IToastProvider, IDialogProvider, IFilePickerProvider, ICameraProvider, IWindowHandleProvider
@@ -73,5 +73,5 @@ Read the relevant doc before modifying code in that area:
 
 - **[docs/navigation.md](docs/navigation.md)** — Navigation service, guards, INavigable lifecycle, guard config API
 - **[docs/toolkit.md](docs/toolkit.md)** — Toast component, platform providers, DI registration patterns
-- **[docs/configuration.md](docs/configuration.md)** — HostConfig, LoggingConfig, resolvers, startup providers, domain config pattern
+- **[docs/configuration.md](docs/configuration.md)** — HostConfig, resolvers, appsettings logging, domain config pattern
 - **[docs/winui-gotchas.md](docs/winui-gotchas.md)** — Platform-specific issues and workarounds

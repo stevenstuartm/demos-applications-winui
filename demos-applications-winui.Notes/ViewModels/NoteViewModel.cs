@@ -43,7 +43,10 @@ public partial class NoteViewModel(
     public partial DateTime CreatedDate { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEditorLoading))]
     public partial bool IsEditorReady { get; set; }
+
+    public bool IsEditorLoading => !IsEditorReady;
 
     [ObservableProperty]
     public partial bool IsEditMode { get; set; }
