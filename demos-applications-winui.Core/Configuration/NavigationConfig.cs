@@ -35,7 +35,7 @@ public class NavigationConfig
     /// all configured guard registrations. Results are cached per page type
     /// since the configuration is immutable after startup.
     /// </summary>
-    internal HashSet<string> GetGuardsForPage(Type pageType)
+    public HashSet<string> GetGuardsForPage(Type pageType)
     {
         if (_resolvedCache.TryGetValue(pageType, out var cached))
             return cached;

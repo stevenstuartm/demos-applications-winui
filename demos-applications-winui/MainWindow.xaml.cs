@@ -2,8 +2,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using demos_applications_winui.Auth.Services;
 using demos_applications_winui.Core.Auth;
-using demos_applications_winui.Core.Navigation;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Navigation;
+using demos_applications_winui.Toolkit.Platform;
 using demos_applications_winui.Toolkit.Toast;
 
 namespace demos_applications_winui;

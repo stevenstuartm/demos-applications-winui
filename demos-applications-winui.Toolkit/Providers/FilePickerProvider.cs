@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Providers;
 

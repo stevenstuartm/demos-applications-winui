@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using demos_applications_winui.Auth.Services;
-using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.ViewModels;
 

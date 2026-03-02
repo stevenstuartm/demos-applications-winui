@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace demos_applications_winui.Core.Platform;
+namespace demos_applications_winui.Toolkit.Platform;
 
 public interface ICameraProvider
 {

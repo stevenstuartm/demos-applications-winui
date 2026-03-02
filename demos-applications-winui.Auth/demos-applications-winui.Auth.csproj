@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\demos-applications-winui.Core\demos-applications-winui.Core.csproj" />
+    <ProjectReference Include="..\demos-applications-winui.Toolkit\demos-applications-winui.Toolkit.csproj" />
   </ItemGroup>
 
 </Project>

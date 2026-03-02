@@ -1,5 +1,5 @@
 using System;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Toast;
 

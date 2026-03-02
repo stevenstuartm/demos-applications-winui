@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace demos_applications_winui.Core.Navigation;
+namespace demos_applications_winui.Toolkit.Navigation;
 
 public partial class NavigationState : ObservableObject, INavigationState
 {

@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Providers;
 

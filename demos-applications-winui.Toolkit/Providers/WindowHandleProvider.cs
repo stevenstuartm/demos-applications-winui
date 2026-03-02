@@ -1,7 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using WinRT.Interop;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Platform;
 
 namespace demos_applications_winui.Toolkit.Providers;
 

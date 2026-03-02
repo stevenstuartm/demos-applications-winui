@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using demos_applications_winui.Auth.Models;
 using demos_applications_winui.Auth.Views;
-using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.Services;
 

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Toolkit.Navigation;
 using demos_applications_winui.Notes.ViewModels;
 
 namespace demos_applications_winui.Notes.Views;

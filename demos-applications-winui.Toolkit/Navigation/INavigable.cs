@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace demos_applications_winui.Core.Navigation;
+namespace demos_applications_winui.Toolkit.Navigation;
 
 public interface INavigable
 {

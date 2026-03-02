@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using demos_applications_winui.Core.Configuration;
+using demos_applications_winui.Core.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 
-namespace demos_applications_winui.Core.Navigation;
+namespace demos_applications_winui.Toolkit.Navigation;
 
 public partial class NavigationService(
     IServiceProvider serviceProvider,

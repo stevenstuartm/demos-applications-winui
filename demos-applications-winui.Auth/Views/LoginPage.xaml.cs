@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using demos_applications_winui.Auth.ViewModels;
-using demos_applications_winui.Core.Navigation;
+using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.Views;
 

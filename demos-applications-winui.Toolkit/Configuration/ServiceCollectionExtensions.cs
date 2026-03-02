@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Navigation;
+using demos_applications_winui.Toolkit.Platform;
 using demos_applications_winui.Toolkit.Providers;
 using demos_applications_winui.Toolkit.Toast;
 
@@ -7,6 +8,14 @@ namespace demos_applications_winui.Toolkit.Configuration;
 
 public static class ToolkitServiceCollectionExtensions
 {
+    public static IServiceCollection AddNavigation(this IServiceCollection services)
+    {
+        services.AddSingleton<NavigationState>();
+        services.AddSingleton<INavigationState>(sp => sp.GetRequiredService<NavigationState>());
+        services.AddSingleton<INavigationService, NavigationService>();
+        return services;
+    }
+
     public static IServiceCollection AddToast(this IServiceCollection services)
     {
         services.AddSingleton<ToastState>();

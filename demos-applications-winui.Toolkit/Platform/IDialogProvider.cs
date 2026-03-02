@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 
-namespace demos_applications_winui.Core.Platform;
+namespace demos_applications_winui.Toolkit.Platform;
 
 public interface IDialogProvider
 {

@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Windows.Media.Capture;
 using WinRT.Interop;
-using demos_applications_winui.Core.Platform;
-using CapturedPhoto = demos_applications_winui.Core.Platform.CapturedPhoto;
+using demos_applications_winui.Toolkit.Platform;
+using CapturedPhoto = demos_applications_winui.Toolkit.Platform.CapturedPhoto;
 
 namespace demos_applications_winui.Toolkit.Providers;
 

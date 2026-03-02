@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using demos_applications_winui.Core.Navigation;
-using demos_applications_winui.Core.Platform;
+using demos_applications_winui.Toolkit.Navigation;
+using demos_applications_winui.Toolkit.Platform;
 using demos_applications_winui.Notes.Models;
 using demos_applications_winui.Notes.Services;
 

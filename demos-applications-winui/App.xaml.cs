@@ -11,10 +11,11 @@ using demos_applications_winui.Auth;
 using demos_applications_winui.Auth.Views;
 using demos_applications_winui.Core.Configuration;
 using demos_applications_winui.Core.Navigation;
-using demos_applications_winui.Core.Platform;
 using demos_applications_winui.Notes;
 using demos_applications_winui.Notes.Views;
 using demos_applications_winui.Toolkit.Configuration;
+using demos_applications_winui.Toolkit.Navigation;
+using demos_applications_winui.Toolkit.Platform;
 using demos_applications_winui.Toolkit.Providers;
 
 namespace demos_applications_winui;
@@ -61,7 +62,7 @@ public partial class App : Application
         e.Handled = true;
 
         var toastProvider = Services.GetRequiredService<IToastProvider>();
-        toastProvider.ShowError(UserMessages.Toast.UnexpectedErrorTitle, UserMessages.Toast.UnexpectedErrorMessage);
+        toastProvider.ShowError("Something went wrong", "An unexpected error occurred. Please try again.");
     }
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
@@ -74,7 +75,7 @@ public partial class App : Application
         _window?.DispatcherQueue.TryEnqueue(() =>
         {
             var toastProvider = Services.GetRequiredService<IToastProvider>();
-            toastProvider.ShowError(UserMessages.Toast.UnexpectedErrorTitle, UserMessages.Toast.BackgroundErrorMessage);
+            toastProvider.ShowError("Something went wrong", "A background error occurred.");
         });
     }
 
