@@ -5,9 +5,10 @@
     <ResourceDictionary.ThemeDictionaries>
 
         <!-- ═══════════════════════════════════════════════════════ -->
-        <!-- LIGHT THEME — Pascal Ivory + Muted Forest Green        -->
+        <!-- DEFAULT (Light baseline) — Pascal Ivory + Forest Green -->
+        <!-- All resources defined here. Dark only overrides diffs. -->
         <!-- ═══════════════════════════════════════════════════════ -->
-        <ResourceDictionary x:Key="Light">
+        <ResourceDictionary x:Key="Default">
 
             <!-- Page / scaffold -->
             <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="#FDF8F0" />
@@ -63,7 +64,7 @@
         </ResourceDictionary>
 
         <!-- ═══════════════════════════════════════════════════════ -->
-        <!-- DARK THEME — Warm dark + Brighter Green                -->
+        <!-- DARK overrides — only resources that differ from Default -->
         <!-- ═══════════════════════════════════════════════════════ -->
         <ResourceDictionary x:Key="Dark">
 
@@ -79,7 +80,7 @@
             <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#F0EBE3" />
             <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#9A9488" />
 
-            <!-- TextBox / PasswordBox (lightweight styling) -->
+            <!-- TextBox / PasswordBox -->
             <SolidColorBrush x:Key="TextControlBackground" Color="#2A2722" />
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#312E28" />
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#2A2722" />
@@ -89,7 +90,7 @@
             <SolidColorBrush x:Key="TextControlForeground" Color="#F0EBE3" />
             <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#6B665E" />
 
-            <!-- Accent button (green) -->
+            <!-- Accent button -->
             <SolidColorBrush x:Key="AccentButtonBackground" Color="#6BAF7B" />
             <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#7DC08D" />
             <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#8FD09E" />
@@ -98,7 +99,6 @@
             <SolidColorBrush x:Key="AccentButtonForegroundPointerOver" Color="#1A1812" />
             <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#1A1812" />
             <SolidColorBrush x:Key="AccentButtonForegroundDisabled" Color="#6B665E" />
-            <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="Transparent" />
 
             <!-- Default button -->
             <SolidColorBrush x:Key="ButtonBackground" Color="#2A2722" />
