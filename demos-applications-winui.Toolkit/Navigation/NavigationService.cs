@@ -6,7 +6,6 @@ using demos_applications_winui.Core.Configuration;
 using demos_applications_winui.Core.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml.Controls;
 
 namespace demos_applications_winui.Toolkit.Navigation;
 
@@ -23,12 +22,12 @@ public partial class NavigationService(
     NavigationConfig navigationConfig,
     ILogger<NavigationService> logger) : INavigationService
 {
-    private Frame? _frame;
+    private INavigationFrame? _frame;
     private readonly Stack<NavigationStackEntry> _backStack = new();
     private object? _currentParameter;
     private bool _navigationInProgress;
 
-    public void SetFrame(Frame frame) => _frame = frame;
+    public void SetFrame(INavigationFrame frame) => _frame = frame;
 
     public async Task GoBackAsync()
     {
@@ -47,7 +46,7 @@ public partial class NavigationService(
                 currentNavigable.OnNavigatedFrom();
 
             var entry = _backStack.Pop();
-            var page = (Page)serviceProvider.GetRequiredService(entry.PageType);
+            var page = serviceProvider.GetRequiredService(entry.PageType);
             _frame.Content = page;
             _currentParameter = entry.Parameter;
             UpdateNavigationState(entry.PageType);
@@ -68,7 +67,7 @@ public partial class NavigationService(
         }
     }
 
-    public async Task NavigateToAsync<TPage>(object? parameter = null) where TPage : Page
+    public async Task NavigateToAsync<TPage>(object? parameter = null)
     {
         if (_frame is null || _navigationInProgress) return;
 
@@ -82,7 +81,7 @@ public partial class NavigationService(
         await NavigateCoreAsync(targetType, targetParam, clearBackStack: isRedirect);
     }
 
-    public async Task NavigateAndReplaceAsync<TPage>(object? parameter = null) where TPage : Page
+    public async Task NavigateAndReplaceAsync<TPage>(object? parameter = null)
     {
         if (_frame is null || _navigationInProgress) return;
 
@@ -151,19 +150,20 @@ public partial class NavigationService(
         {
             LogNavigatingTo(pageType.Name, clearBackStack);
 
-            if (_frame!.Content is Page currentPage)
+            var currentContent = _frame!.Content;
+            if (currentContent is not null)
             {
-                if (currentPage is INavigable currentNavigable)
+                if (currentContent is INavigable currentNavigable)
                     currentNavigable.OnNavigatedFrom();
 
                 if (!clearBackStack)
-                    _backStack.Push(new NavigationStackEntry(currentPage.GetType(), _currentParameter));
+                    _backStack.Push(new NavigationStackEntry(currentContent.GetType(), _currentParameter));
             }
 
             if (clearBackStack)
                 _backStack.Clear();
 
-            var page = (Page)serviceProvider.GetRequiredService(pageType);
+            var page = serviceProvider.GetRequiredService(pageType);
             _frame.Content = page;
             _currentParameter = parameter;
             UpdateNavigationState(pageType);

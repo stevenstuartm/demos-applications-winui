@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
 
 namespace demos_applications_winui.Toolkit.Navigation;
 
@@ -11,13 +10,13 @@ namespace demos_applications_winui.Toolkit.Navigation;
 public interface INavigationService
 {
     Task GoBackAsync();
-    Task NavigateToAsync<TPage>(object? parameter = null) where TPage : Page;
+    Task NavigateToAsync<TPage>(object? parameter = null);
 
     /// <summary>
     /// Navigates to the target page and clears the back stack, preventing back-navigation
     /// to previous pages. Used for flows like post-login redirect.
     /// </summary>
-    Task NavigateAndReplaceAsync<TPage>(object? parameter = null) where TPage : Page;
+    Task NavigateAndReplaceAsync<TPage>(object? parameter = null);
 
     /// <summary>
     /// Navigates to the page configured as <see cref="Core.Configuration.NavigationConfig.DefaultPage"/>,
@@ -29,5 +28,5 @@ public interface INavigationService
     /// Binds this service to the content frame. Must be called once from MainWindow
     /// before any navigation occurs.
     /// </summary>
-    void SetFrame(Frame frame);
+    void SetFrame(INavigationFrame frame);
 }

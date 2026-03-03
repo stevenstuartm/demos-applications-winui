@@ -42,7 +42,7 @@ public sealed partial class MainWindow : Window
         Grid.SetRow(toastPresenter, 1);
         RootGrid.Children.Add(toastPresenter);
 
-        navigationService.SetFrame(rootFrame);
+        navigationService.SetFrame(new NavigationFrame(rootFrame));
 
         rootFrame.Loaded += (_, _) => dialogProvider.SetXamlRoot(rootFrame.XamlRoot);
     }
