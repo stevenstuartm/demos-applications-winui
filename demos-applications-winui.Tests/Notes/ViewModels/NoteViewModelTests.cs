@@ -52,12 +52,12 @@ public class NoteViewModelTests
     };
 
     [Fact]
-    public async Task OnNavigatedToAsync_LoadsNoteData()
+    public async Task InitializeAsync_LoadsNoteData()
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
 
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
 
         ctx.Vm.Title.Should().Be("Test Note");
         ctx.Vm.CreatedDate.Should().Be(new DateTime(2025, 1, 1));
@@ -65,30 +65,30 @@ public class NoteViewModelTests
     }
 
     [Fact]
-    public async Task OnNavigatedToAsync_SetsEditorContent()
+    public async Task InitializeAsync_SetsEditorContent()
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
         ctx.Vm.IsEditorReady = true;
 
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
 
         await ctx.EditorBridge.Received(1).SetContentAsync("<p>Hello</p>");
     }
 
     [Fact]
-    public async Task OnNavigatedToAsync_SuppressesDirtyTracking()
+    public async Task InitializeAsync_SuppressesDirtyTracking()
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
 
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
 
         ctx.Vm.IsDirty.Should().BeFalse();
     }
 
     [Fact]
-    public async Task OnNavigatedToAsync_LoadsAttachments()
+    public async Task InitializeAsync_LoadsAttachments()
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
@@ -97,17 +97,17 @@ public class NoteViewModelTests
             new NoteAttachment { Id = "a2", FileName = "doc.pdf" }
         ];
 
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
 
         ctx.Vm.Attachments.Should().HaveCount(2);
         ctx.Vm.HasAttachments.Should().BeTrue();
     }
 
     [Fact]
-    public void TitleChanged_SetsDirtyFlag()
+    public async Task TitleChanged_SetsDirtyFlag()
     {
         var ctx = CreateVm();
-        _ = ctx.Vm.OnNavigatedToAsync(new NavigationContext(CreateTestNote(), NavigationMode.New));
+        await ctx.Vm.InitializeAsync(CreateTestNote());
 
         ctx.Vm.Title = "Changed Title";
 
@@ -115,10 +115,10 @@ public class NoteViewModelTests
     }
 
     [Fact]
-    public void TitleChanged_ValidatesRequired()
+    public async Task TitleChanged_ValidatesRequired()
     {
         var ctx = CreateVm();
-        _ = ctx.Vm.OnNavigatedToAsync(new NavigationContext(CreateTestNote(), NavigationMode.New));
+        await ctx.Vm.InitializeAsync(CreateTestNote());
 
         ctx.Vm.Title = null;
 
@@ -127,10 +127,10 @@ public class NoteViewModelTests
     }
 
     [Fact]
-    public void TitleChanged_ValidTitle_ClearsError()
+    public async Task TitleChanged_ValidTitle_ClearsError()
     {
         var ctx = CreateVm();
-        _ = ctx.Vm.OnNavigatedToAsync(new NavigationContext(CreateTestNote(), NavigationMode.New));
+        await ctx.Vm.InitializeAsync(CreateTestNote());
         ctx.Vm.Title = null; // trigger error
         ctx.Vm.Title = "Valid Title";
 
@@ -214,7 +214,7 @@ public class NoteViewModelTests
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
         ctx.Vm.Title = "Updated Title";
         ctx.EditorBridge.GetContentAsync().Returns("<p>Updated</p>");
 
@@ -229,7 +229,7 @@ public class NoteViewModelTests
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
         ctx.Vm.Title = "Valid";
         ctx.EditorBridge.GetContentAsync().Returns("<p>content</p>");
 
@@ -243,7 +243,7 @@ public class NoteViewModelTests
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
         ctx.Vm.Title = null;
 
         await ctx.Vm.SaveCommand.ExecuteAsync(null);
@@ -257,7 +257,7 @@ public class NoteViewModelTests
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
         ctx.DialogProvider.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>())
             .Returns(true);
 
@@ -272,7 +272,7 @@ public class NoteViewModelTests
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
         ctx.DialogProvider.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>())
             .Returns(false);
 
@@ -286,7 +286,7 @@ public class NoteViewModelTests
     {
         var ctx = CreateVm();
         var note = CreateTestNote();
-        await ctx.Vm.OnNavigatedToAsync(new NavigationContext(note, NavigationMode.New));
+        await ctx.Vm.InitializeAsync(note);
         ctx.Vm.Title = "Changed";
         ctx.Vm.IsDirty = true;
 
@@ -298,10 +298,10 @@ public class NoteViewModelTests
     }
 
     [Fact]
-    public void EditorContentChanged_SetsDirtyFlag()
+    public async Task EditorContentChanged_SetsDirtyFlag()
     {
         var ctx = CreateVm();
-        _ = ctx.Vm.OnNavigatedToAsync(new NavigationContext(CreateTestNote(), NavigationMode.New));
+        await ctx.Vm.InitializeAsync(CreateTestNote());
 
         ctx.EditorBridge.ContentChanged += Raise.Event<EventHandler<string>>(this, "<p>new</p>");
 
@@ -309,11 +309,11 @@ public class NoteViewModelTests
     }
 
     [Fact]
-    public void OnNavigatedFrom_CancelsPendingCommands()
+    public void Dispose_CancelsPendingCommands()
     {
         var ctx = CreateVm();
 
-        var act = () => ctx.Vm.OnNavigatedFrom();
+        var act = () => ctx.Vm.Dispose();
 
         act.Should().NotThrow();
     }

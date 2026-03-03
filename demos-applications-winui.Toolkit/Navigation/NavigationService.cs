@@ -10,10 +10,11 @@ using Microsoft.Extensions.Logging;
 namespace demos_applications_winui.Toolkit.Navigation;
 
 /// <summary>
-/// Manages page navigation by setting DI-resolved singleton pages as <c>Frame.Content</c>.
-/// Evaluates guards from <see cref="NavigationConfig"/> before each navigation, maintains
-/// a manual back stack, and drives <see cref="INavigable"/> lifecycle callbacks.
-/// Uses a reentrancy flag (<c>_navigationInProgress</c>) to prevent overlapping navigations.
+/// Manages page navigation with transient page instances. Each navigation creates
+/// a fresh page from DI, disposes the previous one, and calls <see cref="INavigable.InitializeAsync"/>
+/// with the navigation parameter. Evaluates guards from <see cref="NavigationConfig"/> before
+/// each navigation, maintains a back stack of <c>(Type, Parameter)</c> entries, and uses a
+/// reentrancy flag to prevent overlapping navigations.
 /// </summary>
 public partial class NavigationService(
     IServiceProvider serviceProvider,
@@ -42,8 +43,7 @@ public partial class NavigationService(
         {
             LogNavigatingBack();
 
-            if (_frame.Content is INavigable currentNavigable)
-                currentNavigable.OnNavigatedFrom();
+            DisposeIfNeeded(_frame.Content);
 
             var entry = _backStack.Pop();
             var page = serviceProvider.GetRequiredService(entry.PageType);
@@ -52,7 +52,7 @@ public partial class NavigationService(
             UpdateNavigationState(entry.PageType);
 
             if (page is INavigable navigable)
-                await navigable.OnNavigatedToAsync(new NavigationContext(entry.Parameter, NavigationMode.Back));
+                await navigable.InitializeAsync(entry.Parameter);
 
             LogNavigatedBackTo(entry.PageType.Name);
         }
@@ -153,15 +153,18 @@ public partial class NavigationService(
             var currentContent = _frame!.Content;
             if (currentContent is not null)
             {
-                if (currentContent is INavigable currentNavigable)
-                    currentNavigable.OnNavigatedFrom();
-
                 if (!clearBackStack)
                     _backStack.Push(new NavigationStackEntry(currentContent.GetType(), _currentParameter));
-            }
 
-            if (clearBackStack)
+                DisposeIfNeeded(currentContent);
+
+                if (clearBackStack)
+                    _backStack.Clear();
+            }
+            else if (clearBackStack)
+            {
                 _backStack.Clear();
+            }
 
             var page = serviceProvider.GetRequiredService(pageType);
             _frame.Content = page;
@@ -169,7 +172,7 @@ public partial class NavigationService(
             UpdateNavigationState(pageType);
 
             if (page is INavigable navigable)
-                await navigable.OnNavigatedToAsync(new NavigationContext(parameter, NavigationMode.New));
+                await navigable.InitializeAsync(parameter);
 
             LogNavigatedTo(pageType.Name);
         }
@@ -189,6 +192,12 @@ public partial class NavigationService(
         navigationState.CanGoBack = _backStack.Count > 0;
         navigationState.CurrentPageType = currentPageType;
         navigationState.BackStack = _backStack.Reverse().ToList();
+    }
+
+    private static void DisposeIfNeeded(object? page)
+    {
+        if (page is IDisposable disposable)
+            disposable.Dispose();
     }
 
     [LoggerMessage(EventId = 1000, Level = LogLevel.Debug, Message = "Navigating back")]

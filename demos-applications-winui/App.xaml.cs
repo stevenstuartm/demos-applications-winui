@@ -141,8 +141,9 @@ public partial class App : Application
         services.AddToast();
         services.AddProviders();
 
-        // Navigation
+        // Navigation + WIP
         services.AddNavigation();
+        services.AddWorkInProgress();
 
         // Window infrastructure
         services.AddSingleton<IWindowHandleProvider>(sp =>

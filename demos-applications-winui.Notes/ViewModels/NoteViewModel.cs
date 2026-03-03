@@ -14,10 +14,10 @@ using demos_applications_winui.Notes.Services;
 namespace demos_applications_winui.Notes.ViewModels;
 
 /// <summary>
-/// Detail/edit VM for a single note. Uses <see cref="ObservableValidator"/> for
-/// title validation, dirty-tracking via <see cref="_suppressDirtyTracking"/> to
-/// distinguish user edits from programmatic loads, and
-/// <see cref="INavigable.CanNavigateFromAsync"/> to prompt before discarding unsaved changes.
+/// Detail/edit VM for a single note. Transient — created fresh per navigation.
+/// Uses <see cref="ObservableValidator"/> for title validation, dirty-tracking via
+/// <see cref="_suppressDirtyTracking"/> to distinguish user edits from programmatic loads,
+/// and <see cref="INavigable.CanNavigateFromAsync"/> to prompt before discarding unsaved changes.
 /// The <see cref="IHtmlEditorBridge"/> is set by the view after WebView2 initializes.
 /// </summary>
 public partial class NoteViewModel(
@@ -27,7 +27,7 @@ public partial class NoteViewModel(
     IFilePickerProvider filePickerProvider,
     ICameraProvider cameraProvider,
     IToastProvider toastProvider,
-    ILogger<NoteViewModel> logger) : ObservableValidator, INavigable
+    ILogger<NoteViewModel> logger) : ObservableValidator, INavigable, IDisposable
 {
     private Note? _currentNote;
     private IHtmlEditorBridge? _editorBridge;
@@ -68,18 +68,30 @@ public partial class NoteViewModel(
 
     public ObservableCollection<NoteAttachment> Attachments { get; } = [];
 
-    public void SetEditorBridge(IHtmlEditorBridge bridge)
+    /// <summary>
+    /// Called by the view after WebView2 initializes. If <see cref="InitializeAsync"/>
+    /// already ran (which it will — the bridge isn't ready during init), this loads
+    /// the stored content into the editor.
+    /// </summary>
+    public async void SetEditorBridge(IHtmlEditorBridge bridge)
     {
         if (_editorBridge is not null)
             _editorBridge.ContentChanged -= OnEditorContentChanged;
 
         _editorBridge = bridge;
         _editorBridge.ContentChanged += OnEditorContentChanged;
+
+        if (_savedHtmlContent is not null)
+        {
+            _suppressDirtyTracking = true;
+            await _editorBridge.SetContentAsync(_savedHtmlContent);
+            _suppressDirtyTracking = false;
+        }
     }
 
-    public async Task OnNavigatedToAsync(NavigationContext context)
+    public async Task InitializeAsync(object? parameter)
     {
-        if (context.Parameter is Note note)
+        if (parameter is Note note)
         {
             LogLoadingNote(note.Id);
             _suppressDirtyTracking = true;
@@ -109,12 +121,6 @@ public partial class NoteViewModel(
         }
     }
 
-    public void OnNavigatedFrom()
-    {
-        SaveCommand.Cancel();
-        DeleteCommand.Cancel();
-    }
-
     public async Task<bool> CanNavigateFromAsync()
     {
         if (!IsDirty) return true;
@@ -127,6 +133,15 @@ public partial class NoteViewModel(
             IsDirty = false;
 
         return confirmed;
+    }
+
+    public void Dispose()
+    {
+        SaveCommand.Cancel();
+        DeleteCommand.Cancel();
+
+        if (_editorBridge is not null)
+            _editorBridge.ContentChanged -= OnEditorContentChanged;
     }
 
     partial void OnTitleChanged(string? value)

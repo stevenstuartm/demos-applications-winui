@@ -86,14 +86,58 @@ services.AddSingleton<IWindowHandleProvider>(sp =>
     new WindowHandleProvider(sp.GetRequiredService<MainWindow>()));
 ```
 
+## Work In Progress (WIP) Repository (Toolkit.WorkInProgress)
+
+Standard abstraction for editing state that needs to survive view model disposal across navigations. A singleton `IWorkInProgressRepository` stores typed sessions on-demand by key. Domains inject the repository and call `Get<TData>(key)`.
+
+### Architecture
+
+| Type | Visibility | Purpose |
+|------|-----------|---------|
+| `IWorkInProgress` | Public | Non-generic base: `HasPendingWork`, `Clear()` |
+| `IWorkInProgress<TData>` | Public | Typed session: `Data`, `IsDirty`, `Begin()`, `MarkDirty()`, `MarkClean()`, `Clear()` |
+| `IWorkInProgressRepository` | Public | Central store: `Get<TData>(key)`, `Has(key)`, `HasAnyPendingWork()`, `Remove(key)`, `RemoveAll()` |
+| `WorkInProgress<TData>` | Internal | Session implementation using `ObservableObject` + `[ObservableProperty]` |
+| `WorkInProgressRepository` | Internal | Repository implementation using `Dictionary<string, IWorkInProgress>` |
+
+### Usage Pattern
+
+```csharp
+// VM injects IWorkInProgressRepository
+var wip = wipRepo.Get<NoteEditData>("note-edit");
+
+// Begin a session
+wip.Begin(new NoteEditData { Title = "Draft", Content = "<p>...</p>" });
+
+// Track changes
+wip.MarkDirty();
+
+// Check before navigating away
+if (wip.HasPendingWork) { /* prompt user */ }
+
+// Complete or discard
+wip.Clear();
+wipRepo.Remove("note-edit");
+```
+
+### Key Design Decisions
+
+- **One DI registration** (`IWorkInProgressRepository` as singleton) — no per-type registrations needed
+- Sessions created on-demand by key via `Get<TData>(key)` — returns same session for same key
+- Throws `InvalidOperationException` if a key is requested with a different `TData` type
+- `HasPendingWork` = `Data is not null && IsDirty` — supports cross-cutting queries
+- All sessions implement `INotifyPropertyChanged` for UI binding
+- **Currently not wired into any pages** — the pattern is built and tested for future use
+
 ## DI Registration
 
 All registration via extension methods in `Toolkit.Configuration.ToolkitServiceCollectionExtensions`:
 
 ```csharp
-services.AddNavigation();   // NavigationState, INavigationState, INavigationService
-services.AddToast();        // ToastState, IToastState, IToastProvider, ToastPresenter
-services.AddProviders();    // IDialogProvider, IFilePickerProvider, ICameraProvider
+services.AddNavigation();        // NavigationState, INavigationState, INavigationService
+services.AddToast();             // ToastState, IToastState, IToastProvider, ToastPresenter
+services.AddProviders();         // IDialogProvider, IFilePickerProvider, ICameraProvider
+services.AddWorkInProgress();    // IWorkInProgressRepository
 ```
 
 `IWindowHandleProvider` is registered in `App.xaml.cs` (not via `AddProviders()`) because it depends on `MainWindow`.

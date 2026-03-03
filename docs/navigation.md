@@ -2,7 +2,7 @@
 
 ## Overview
 
-Custom navigation system that does **not** use `Frame.Navigate()`. Instead, `NavigationService` sets `Frame.Content` directly with DI-resolved singleton page instances.
+Custom navigation system that does **not** use `Frame.Navigate()`. Instead, `NavigationService` creates fresh DI-resolved page instances and sets `Frame.Content` directly. Previous pages are disposed.
 
 Navigation mechanism lives in **Toolkit.Navigation**. Guard policy lives in **Core.Navigation**.
 
@@ -19,15 +19,33 @@ Primary constructor dependencies:
 
 | Method | Behavior |
 |--------|----------|
-| `NavigateToAsync<TPage>(parameter?)` | Checks guards, pushes current page to back stack, resolves and displays new page |
-| `NavigateAndReplaceAsync<TPage>(parameter?)` | Checks guards, clears back stack, resolves and displays new page. Used for auth flows. |
+| `NavigateToAsync<TPage>(parameter?)` | Checks guards, disposes current page, pushes entry to back stack, resolves fresh page, calls `InitializeAsync` |
+| `NavigateAndReplaceAsync<TPage>(parameter?)` | Checks guards (skips `CanNavigateFromAsync`), disposes current page, clears back stack, resolves fresh page. Used for auth flows. |
 | `NavigateToDefaultAsync()` | Navigates to `NavigationConfig.DefaultPage` with cleared back stack |
-| `GoBackAsync()` | Pops from back stack, resolves and displays previous page |
-| `SetFrame(Frame)` | Called once from MainWindow constructor |
+| `GoBackAsync()` | Disposes current page, pops entry from back stack, resolves fresh page, calls `InitializeAsync(entry.Parameter)` |
+| `SetFrame(INavigationFrame)` | Called once from MainWindow constructor |
+
+### Transient Pages
+
+Every navigation creates a fresh page instance from DI. The previous page is disposed via `IDisposable` if it implements it. The back stack stores `(Type, Parameter)` entries — not live instances.
+
+This means:
+- Pages/VMs can use constructor defaults and fields without manual reset logic
+- No `OnNavigatedFrom` — use `IDisposable.Dispose()` for cleanup (cancel commands, unsub events)
+- No `OnNavigatedToAsync(NavigationContext)` — use `InitializeAsync(object? parameter)` instead
+- Back navigation creates a completely fresh page, re-initialized with the stored parameter
 
 ### Back Stack
 
-Entry-based: `Stack<NavigationStackEntry(Type PageType, object? Parameter)>` stores page types and parameters, not instances. Pages are re-resolved from DI on back navigation (they're singletons, so same instance).
+Entry-based: `Stack<NavigationStackEntry(Type PageType, object? Parameter)>`. On back navigation, the entry is popped, a fresh page is resolved from DI, and `InitializeAsync(entry.Parameter)` is called.
+
+### Navigation Parameters
+
+**Parameters are load hints, not mutable working state.** The back stack stores the original parameter reference. Pages must treat parameters as "what to load" — an ID, a model snapshot to copy from, or `null` — and copy what they need into local fields during `InitializeAsync`. Do not bind directly to a parameter object or assume it remains unchanged across navigations.
+
+- **IDs and null** — always safe. The page fetches current state from the service.
+- **Model objects** — safe when the page copies fields into its own state during `InitializeAsync` (current pattern). Unsafe if the page holds a live reference that other pages also mutate.
+- **Multi-page editing flows** — use the WIP repository. The parameter identifies which WIP session to resume; the WIP session holds the authoritative editing state.
 
 ### Concurrency Guard
 
@@ -37,27 +55,28 @@ Entry-based: `Stack<NavigationStackEntry(Type PageType, object? Parameter)>` sto
 
 1. `CheckCanNavigateFromAsync()` — asks current page if it's OK to leave (e.g., unsaved changes dialog)
 2. `CheckGuards()` — evaluates guards, may block or redirect
-3. `OnNavigatedFrom()` on current page
-4. Push current to back stack (unless replacing)
-5. Resolve new page from DI, set as `Frame.Content`
-6. `OnNavigatedToAsync(NavigationContext)` on new page
+3. `DisposeIfNeeded()` on current page — calls `IDisposable.Dispose()` if implemented
+4. Push `(Type, Parameter)` to back stack (unless replacing/clearing)
+5. Resolve fresh page from DI, set as `Frame.Content`
+6. `InitializeAsync(parameter)` on new page
+
+**Note**: `NavigateAndReplaceAsync` skips step 1 (`CanNavigateFromAsync`) — this is intentional for auth redirect flows where the user should not be prompted.
 
 ## INavigable (Toolkit.Navigation)
 
-Pages and VMs implement this to participate in the navigation lifecycle:
+Pages implement this to participate in the navigation lifecycle:
 
 ```csharp
 public interface INavigable
 {
-    Task OnNavigatedToAsync(NavigationContext context);
-    void OnNavigatedFrom();
-    Task<bool> CanNavigateFromAsync() => Task.FromResult(true);  // default impl
+    Task InitializeAsync(object? parameter) => Task.CompletedTask;   // default: no-op
+    Task<bool> CanNavigateFromAsync() => Task.FromResult(true);      // default: allow
 }
 ```
 
-- `NavigationContext(object? Parameter, NavigationMode Mode)` — Mode is `New` or `Back`
-- Pages delegate to their VMs: `public Task OnNavigatedToAsync(NavigationContext context) => ViewModel.OnNavigatedToAsync(context);`
+- Pages delegate to their VMs: `public Task InitializeAsync(object? parameter) => ViewModel.InitializeAsync(parameter);`
 - `CanNavigateFromAsync()` — return `false` to block navigation (e.g., unsaved changes confirmation)
+- For cleanup, implement `IDisposable` on the page/VM (cancel commands, unsubscribe events)
 
 ## Navigation Guards (Core.Navigation)
 

@@ -4,8 +4,9 @@ namespace demos_applications_winui.Toolkit.Navigation;
 
 /// <summary>
 /// Custom navigation service that bypasses <c>Frame.Navigate</c> in favor of
-/// DI-resolved singleton pages set as <c>Frame.Content</c>. Supports guard
-/// evaluation, back-stack management, and <see cref="INavigable"/> lifecycle callbacks.
+/// DI-resolved transient pages set as <c>Frame.Content</c>. Each navigation creates
+/// a fresh page instance, disposes the previous one, and calls <see cref="INavigable.InitializeAsync"/>.
+/// Supports guard evaluation and back-stack management.
 /// </summary>
 public interface INavigationService
 {

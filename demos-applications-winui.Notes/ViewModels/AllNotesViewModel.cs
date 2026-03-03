@@ -11,9 +11,9 @@ using demos_applications_winui.Notes.Views;
 namespace demos_applications_winui.Notes.ViewModels;
 
 /// <summary>
-/// Lists all notes and handles creation/navigation. Reloads the full note list
-/// on every <see cref="INavigable.OnNavigatedToAsync"/> to reflect changes
-/// made on the detail page.
+/// Lists all notes and handles creation/navigation. Transient — reloads the
+/// full note list on every <see cref="INavigable.InitializeAsync"/> to reflect
+/// changes made on the detail page.
 /// </summary>
 public partial class AllNotesViewModel(
     INotesService notesService,
@@ -22,14 +22,9 @@ public partial class AllNotesViewModel(
 {
     public ObservableCollection<Note> Notes { get; } = [];
 
-    public async Task OnNavigatedToAsync(NavigationContext context)
+    public async Task InitializeAsync(object? parameter)
     {
         await LoadNotesCommand.ExecuteAsync(null);
-    }
-
-    public void OnNavigatedFrom()
-    {
-        LoadNotesCommand.Cancel();
     }
 
     [RelayCommand]

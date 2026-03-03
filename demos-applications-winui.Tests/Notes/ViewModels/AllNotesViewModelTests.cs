@@ -24,7 +24,7 @@ public class AllNotesViewModelTests
     }
 
     [Fact]
-    public async Task OnNavigatedToAsync_LoadsNotes()
+    public async Task InitializeAsync_LoadsNotes()
     {
         var (vm, notesService, _) = CreateVm();
         var notes = new List<Note>
@@ -34,7 +34,7 @@ public class AllNotesViewModelTests
         };
         notesService.LoadNotesAsync().Returns(notes);
 
-        await vm.OnNavigatedToAsync(new NavigationContext(null, NavigationMode.New));
+        await vm.InitializeAsync(null);
 
         vm.Notes.Should().HaveCount(2);
         vm.Notes[0].Title.Should().Be("Note 1");
@@ -42,21 +42,21 @@ public class AllNotesViewModelTests
     }
 
     [Fact]
-    public async Task OnNavigatedToAsync_ClearsPreviousNotes()
+    public async Task InitializeAsync_ClearsPreviousNotes()
     {
         var (vm, notesService, _) = CreateVm();
         notesService.LoadNotesAsync().Returns(new List<Note>
         {
             new() { Id = "1", Title = "Old" }
         });
-        await vm.OnNavigatedToAsync(new NavigationContext(null, NavigationMode.New));
+        await vm.InitializeAsync(null);
 
-        // Second navigation should clear and reload
+        // Second init should clear and reload
         notesService.LoadNotesAsync().Returns(new List<Note>
         {
             new() { Id = "2", Title = "New" }
         });
-        await vm.OnNavigatedToAsync(new NavigationContext(null, NavigationMode.Back));
+        await vm.InitializeAsync(null);
 
         vm.Notes.Should().HaveCount(1);
         vm.Notes[0].Title.Should().Be("New");
@@ -101,23 +101,13 @@ public class AllNotesViewModelTests
     }
 
     [Fact]
-    public async Task OnNavigatedToAsync_EmptyList_ShowsNoNotes()
+    public async Task InitializeAsync_EmptyList_ShowsNoNotes()
     {
         var (vm, notesService, _) = CreateVm();
         notesService.LoadNotesAsync().Returns(new List<Note>());
 
-        await vm.OnNavigatedToAsync(new NavigationContext(null, NavigationMode.New));
+        await vm.InitializeAsync(null);
 
         vm.Notes.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void OnNavigatedFrom_DoesNotThrow()
-    {
-        var (vm, _, _) = CreateVm();
-
-        var act = () => vm.OnNavigatedFrom();
-
-        act.Should().NotThrow();
     }
 }

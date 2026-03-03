@@ -25,31 +25,46 @@ public class NavigationServiceTests
 
     private class NavigablePage : INavigable
     {
-        public NavigationContext? LastContext { get; private set; }
-        public bool NavigatedFromCalled { get; private set; }
+        public object? LastParameter { get; private set; }
+        public bool InitializeCalled { get; private set; }
         public bool CanNavigateFrom { get; set; } = true;
 
-        public Task OnNavigatedToAsync(NavigationContext context)
+        public Task InitializeAsync(object? parameter)
         {
-            LastContext = context;
+            InitializeCalled = true;
+            LastParameter = parameter;
             return Task.CompletedTask;
         }
 
-        public void OnNavigatedFrom() => NavigatedFromCalled = true;
         public Task<bool> CanNavigateFromAsync() => Task.FromResult(CanNavigateFrom);
+    }
+
+    private class DisposablePage : INavigable, IDisposable
+    {
+        public object? LastParameter { get; private set; }
+        public bool Disposed { get; private set; }
+        public bool CanNavigateFrom { get; set; } = true;
+
+        public Task InitializeAsync(object? parameter)
+        {
+            LastParameter = parameter;
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> CanNavigateFromAsync() => Task.FromResult(CanNavigateFrom);
+        public void Dispose() => Disposed = true;
     }
 
     private class BlockingNavigablePage : INavigable
     {
-        private readonly Func<Task> _onNavigatedTo;
+        private readonly Func<Task> _onInitialize;
 
-        public BlockingNavigablePage(Func<Task> onNavigatedTo)
+        public BlockingNavigablePage(Func<Task> onInitialize)
         {
-            _onNavigatedTo = onNavigatedTo;
+            _onInitialize = onInitialize;
         }
 
-        public Task OnNavigatedToAsync(NavigationContext context) => _onNavigatedTo();
-        public void OnNavigatedFrom() { }
+        public Task InitializeAsync(object? parameter) => _onInitialize();
     }
 
     private record ServiceContext(
@@ -126,7 +141,7 @@ public class NavigationServiceTests
     }
 
     [Fact]
-    public async Task NavigateToAsync_CallsOnNavigatedToAsync()
+    public async Task NavigateToAsync_CallsInitializeAsync()
     {
         var ctx = CreateService();
         var page = new NavigablePage();
@@ -134,9 +149,8 @@ public class NavigationServiceTests
 
         await ctx.Service.NavigateToAsync<NavigablePage>("param");
 
-        page.LastContext.Should().NotBeNull();
-        page.LastContext!.Mode.Should().Be(NavigationMode.New);
-        page.LastContext.Parameter.Should().Be("param");
+        page.InitializeCalled.Should().BeTrue();
+        page.LastParameter.Should().Be("param");
     }
 
     [Fact]
@@ -171,18 +185,20 @@ public class NavigationServiceTests
     }
 
     [Fact]
-    public async Task NavigateToAsync_CallsOnNavigatedFromOnCurrentPage()
+    public async Task NavigateToAsync_DisposesCurrentPage()
     {
         var ctx = CreateService();
-        var currentPage = new NavigablePage();
+        var currentPage = new DisposablePage();
         var nextPage = new StubPageB();
-        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(currentPage);
+        ctx.ServiceProvider.GetService(typeof(DisposablePage)).Returns(currentPage);
         ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(nextPage);
 
-        await ctx.Service.NavigateToAsync<NavigablePage>();
+        await ctx.Service.NavigateToAsync<DisposablePage>();
+        currentPage.Disposed.Should().BeFalse();
+
         await ctx.Service.NavigateToAsync<StubPageB>();
 
-        currentPage.NavigatedFromCalled.Should().BeTrue();
+        currentPage.Disposed.Should().BeTrue();
     }
 
     // --- NavigateAndReplaceAsync ---
@@ -215,6 +231,39 @@ public class NavigationServiceTests
         ctx.State.CanGoBack.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task NavigateAndReplaceAsync_DisposesCurrentPage()
+    {
+        var ctx = CreateService();
+        var currentPage = new DisposablePage();
+        var nextPage = new StubPageB();
+        ctx.ServiceProvider.GetService(typeof(DisposablePage)).Returns(currentPage);
+        ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(nextPage);
+
+        await ctx.Service.NavigateToAsync<DisposablePage>();
+        await ctx.Service.NavigateAndReplaceAsync<StubPageB>();
+
+        currentPage.Disposed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task NavigateAndReplaceAsync_SkipsCanNavigateFrom()
+    {
+        var ctx = CreateService();
+        var currentPage = new DisposablePage { CanNavigateFrom = false };
+        var nextPage = new StubPageB();
+        ctx.ServiceProvider.GetService(typeof(DisposablePage)).Returns(currentPage);
+        ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(nextPage);
+
+        await ctx.Service.NavigateToAsync<DisposablePage>();
+
+        // NavigateAndReplaceAsync skips CanNavigateFromAsync (auth redirect pattern)
+        await ctx.Service.NavigateAndReplaceAsync<StubPageB>();
+
+        ctx.Frame.Content.Should().BeSameAs(nextPage);
+        currentPage.Disposed.Should().BeTrue();
+    }
+
     // --- NavigateToDefaultAsync ---
 
     [Fact]
@@ -230,23 +279,44 @@ public class NavigationServiceTests
         ctx.Frame.Content.Should().BeSameAs(page);
     }
 
+    [Fact]
+    public async Task NavigateToDefaultAsync_DisposesCurrentPage()
+    {
+        var ctx = CreateService();
+        var currentPage = new DisposablePage();
+        var defaultPage = new StubPage();
+        ctx.ServiceProvider.GetService(typeof(DisposablePage)).Returns(currentPage);
+        ctx.ServiceProvider.GetService(typeof(StubPage)).Returns(defaultPage);
+
+        await ctx.Service.NavigateToAsync<DisposablePage>();
+        await ctx.Service.NavigateToDefaultAsync();
+
+        currentPage.Disposed.Should().BeTrue();
+    }
+
     // --- GoBackAsync ---
 
     [Fact]
-    public async Task GoBackAsync_PopsBackStackAndSetsContent()
+    public async Task GoBackAsync_CreatesFreshInstanceFromDI()
     {
         var ctx = CreateService();
-        var pageA = new StubPage();
+        var pageA = new NavigablePage();
         var pageB = new StubPageB();
-        ctx.ServiceProvider.GetService(typeof(StubPage)).Returns(pageA);
+        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(pageA);
         ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(pageB);
 
-        await ctx.Service.NavigateToAsync<StubPage>();
+        await ctx.Service.NavigateToAsync<NavigablePage>("param");
         await ctx.Service.NavigateToAsync<StubPageB>();
+
+        // DI will return a fresh instance on back-nav
+        var freshPageA = new NavigablePage();
+        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(freshPageA);
+
         await ctx.Service.GoBackAsync();
 
-        ctx.State.CurrentPageType.Should().Be(typeof(StubPage));
-        ctx.Frame.Content.Should().BeSameAs(pageA);
+        ctx.State.CurrentPageType.Should().Be(typeof(NavigablePage));
+        ctx.Frame.Content.Should().BeSameAs(freshPageA);
+        ctx.Frame.Content.Should().NotBeSameAs(pageA);
     }
 
     [Fact]
@@ -265,44 +335,22 @@ public class NavigationServiceTests
     }
 
     [Fact]
-    public async Task GoBackAsync_CallsOnNavigatedFromOnCurrentPage()
+    public async Task GoBackAsync_DisposesCurrentPage()
     {
         var ctx = CreateService();
         var pageA = new StubPage();
-        var pageB = new NavigablePage();
+        var pageB = new DisposablePage();
         ctx.ServiceProvider.GetService(typeof(StubPage)).Returns(pageA);
-        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(pageB);
+        ctx.ServiceProvider.GetService(typeof(DisposablePage)).Returns(pageB);
 
         await ctx.Service.NavigateToAsync<StubPage>();
-        await ctx.Service.NavigateToAsync<NavigablePage>();
+        await ctx.Service.NavigateToAsync<DisposablePage>();
 
-        pageB.NavigatedFromCalled.Should().BeFalse();
-
-        await ctx.Service.GoBackAsync();
-
-        pageB.NavigatedFromCalled.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task GoBackAsync_NavigationModeIsBack()
-    {
-        var ctx = CreateService();
-        var pageA = new NavigablePage();
-        var pageB = new StubPageB();
-        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(pageA);
-        ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(pageB);
-
-        await ctx.Service.NavigateToAsync<NavigablePage>();
-        await ctx.Service.NavigateToAsync<StubPageB>();
-
-        // Reset to get a fresh instance for the back navigation
-        var freshPageA = new NavigablePage();
-        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(freshPageA);
+        pageB.Disposed.Should().BeFalse();
 
         await ctx.Service.GoBackAsync();
 
-        freshPageA.LastContext.Should().NotBeNull();
-        freshPageA.LastContext!.Mode.Should().Be(NavigationMode.Back);
+        pageB.Disposed.Should().BeTrue();
     }
 
     [Fact]
@@ -322,7 +370,28 @@ public class NavigationServiceTests
 
         await ctx.Service.GoBackAsync();
 
-        freshPageA.LastContext!.Parameter.Should().Be("original-param");
+        freshPageA.LastParameter.Should().Be("original-param");
+    }
+
+    [Fact]
+    public async Task GoBackAsync_CallsInitializeAsyncOnFreshInstance()
+    {
+        var ctx = CreateService();
+        var pageA = new NavigablePage();
+        var pageB = new StubPageB();
+        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(pageA);
+        ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(pageB);
+
+        await ctx.Service.NavigateToAsync<NavigablePage>("my-data");
+        await ctx.Service.NavigateToAsync<StubPageB>();
+
+        var freshPageA = new NavigablePage();
+        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(freshPageA);
+
+        await ctx.Service.GoBackAsync();
+
+        freshPageA.InitializeCalled.Should().BeTrue();
+        freshPageA.LastParameter.Should().Be("my-data");
     }
 
     // --- Guard evaluation ---
@@ -428,6 +497,22 @@ public class NavigationServiceTests
         ctx.Frame.Content.Should().BeSameAs(pageB);
     }
 
+    [Fact]
+    public async Task NavigateToAsync_CanNavigateFromReturnsFalse_DoesNotDispose()
+    {
+        var ctx = CreateService();
+        var currentPage = new DisposablePage { CanNavigateFrom = false };
+        var nextPage = new StubPageB();
+        ctx.ServiceProvider.GetService(typeof(DisposablePage)).Returns(currentPage);
+        ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(nextPage);
+
+        await ctx.Service.NavigateToAsync<DisposablePage>();
+        await ctx.Service.NavigateToAsync<StubPageB>();
+
+        currentPage.Disposed.Should().BeFalse();
+        ctx.Frame.Content.Should().BeSameAs(currentPage);
+    }
+
     // --- Reentrancy protection ---
 
     [Fact]
@@ -441,7 +526,7 @@ public class NavigationServiceTests
         ctx.ServiceProvider.GetService(typeof(BlockingNavigablePage)).Returns(slowPage);
         ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(nextPage);
 
-        // Start a navigation that will block on OnNavigatedToAsync
+        // Start a navigation that will block on InitializeAsync
         var firstNav = ctx.Service.NavigateToAsync<BlockingNavigablePage>();
 
         // Try to navigate while first is in progress — should be ignored
@@ -518,5 +603,23 @@ public class NavigationServiceTests
 
         await ctx.Service.GoBackAsync();
         ctx.State.CanGoBack.Should().BeFalse();
+    }
+
+    // --- Non-disposable pages are not affected ---
+
+    [Fact]
+    public async Task NavigateToAsync_NonDisposablePage_DoesNotThrow()
+    {
+        var ctx = CreateService();
+        var pageA = new NavigablePage();
+        var pageB = new StubPageB();
+        ctx.ServiceProvider.GetService(typeof(NavigablePage)).Returns(pageA);
+        ctx.ServiceProvider.GetService(typeof(StubPageB)).Returns(pageB);
+
+        await ctx.Service.NavigateToAsync<NavigablePage>();
+
+        var act = () => ctx.Service.NavigateToAsync<StubPageB>();
+
+        await act.Should().NotThrowAsync();
     }
 }

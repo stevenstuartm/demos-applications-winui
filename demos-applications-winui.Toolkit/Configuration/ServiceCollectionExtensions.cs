@@ -3,6 +3,7 @@ using demos_applications_winui.Toolkit.Navigation;
 using demos_applications_winui.Toolkit.Platform;
 using demos_applications_winui.Toolkit.Providers;
 using demos_applications_winui.Toolkit.Toast;
+using demos_applications_winui.Toolkit.WorkInProgress;
 
 namespace demos_applications_winui.Toolkit.Configuration;
 
@@ -39,6 +40,16 @@ public static class ToolkitServiceCollectionExtensions
         services.AddSingleton<IDialogProvider, DialogProvider>();
         services.AddSingleton<IFilePickerProvider, FilePickerProvider>();
         services.AddSingleton<ICameraProvider, CameraProvider>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the <see cref="IWorkInProgressRepository"/> singleton. Sessions
+    /// are created on-demand by key — no per-type registration needed.
+    /// </summary>
+    public static IServiceCollection AddWorkInProgress(this IServiceCollection services)
+    {
+        services.AddSingleton<IWorkInProgressRepository, WorkInProgressRepository>();
         return services;
     }
 }

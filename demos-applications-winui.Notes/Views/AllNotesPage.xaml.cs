@@ -16,8 +16,7 @@ public sealed partial class AllNotesPage : Page, INavigable
         InitializeComponent();
     }
 
-    public Task OnNavigatedToAsync(NavigationContext context) => ViewModel.OnNavigatedToAsync(context);
-    public void OnNavigatedFrom() => ViewModel.OnNavigatedFrom();
+    public Task InitializeAsync(object? parameter) => ViewModel.InitializeAsync(parameter);
 
     private async void ItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {

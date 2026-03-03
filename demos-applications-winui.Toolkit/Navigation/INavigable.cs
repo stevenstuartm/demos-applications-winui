@@ -3,22 +3,19 @@ using System.Threading.Tasks;
 namespace demos_applications_winui.Toolkit.Navigation;
 
 /// <summary>
-/// Lifecycle contract implemented by pages (and delegated to their view models).
-/// <see cref="NavigationService"/> calls these methods at each stage of navigation.
+/// Optional lifecycle contract for pages participating in the navigation system.
+/// Pages are transient — each navigation creates a fresh instance.
+/// <see cref="InitializeAsync"/> is called once after creation with the navigation parameter.
+/// <see cref="CanNavigateFromAsync"/> is called before leaving to allow cancellation
+/// (e.g., unsaved changes prompt).
 /// </summary>
 public interface INavigable
 {
     /// <summary>
-    /// Called after the page becomes the active content. Use for loading data,
-    /// restoring editor state, or reacting to the navigation parameter.
+    /// Called once after the page is created and set as content. Receives the
+    /// navigation parameter (e.g., a Note to edit). Default is no-op.
     /// </summary>
-    Task OnNavigatedToAsync(NavigationContext context);
-
-    /// <summary>
-    /// Called when the page is being replaced. Use for cleanup, cancelling
-    /// in-flight commands, or clearing sensitive fields.
-    /// </summary>
-    void OnNavigatedFrom();
+    Task InitializeAsync(object? parameter) => Task.CompletedTask;
 
     /// <summary>
     /// Async outbound guard — returning <c>false</c> cancels the pending navigation.

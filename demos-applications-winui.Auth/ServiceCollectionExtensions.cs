@@ -23,8 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAuthService, AuthService>();
         services.AddSingleton<INavigationGuard, IsAuthenticatedGuard>();
 
-        services.AddSingleton<LoginViewModel>();
-        services.AddSingleton<LoginPage>();
+        services.AddTransient<LoginViewModel>();
+        services.AddTransient<LoginPage>();
 
         return services;
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -6,10 +7,9 @@ using demos_applications_winui.Notes.ViewModels;
 
 namespace demos_applications_winui.Notes.Views;
 
-public sealed partial class NotePage : Page, INavigable
+public sealed partial class NotePage : Page, INavigable, IDisposable
 {
     public NoteViewModel ViewModel { get; }
-    private HtmlEditorBridge? _bridge;
 
     public NotePage(NoteViewModel viewModel)
     {
@@ -18,23 +18,20 @@ public sealed partial class NotePage : Page, INavigable
         Loaded += OnLoaded;
     }
 
-    /// <summary>
-    /// Initializes the WebView2 editor bridge on first load. The null-check guards
-    /// against re-initialization since this is a singleton page that may be Loaded
-    /// multiple times across navigations.
-    /// </summary>
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (_bridge is not null) return;
-
-        _bridge = new HtmlEditorBridge(EditorWebView);
-        await _bridge.InitializeAsync();
-        ViewModel.SetEditorBridge(_bridge);
+        var bridge = new HtmlEditorBridge(EditorWebView);
+        await bridge.InitializeAsync();
+        ViewModel.SetEditorBridge(bridge);
         ViewModel.IsEditorReady = true;
     }
 
-    public Task OnNavigatedToAsync(NavigationContext context) =>
-        ViewModel.OnNavigatedToAsync(context);
+    public Task InitializeAsync(object? parameter) => ViewModel.InitializeAsync(parameter);
 
-    public void OnNavigatedFrom() => ViewModel.OnNavigatedFrom();
+    public Task<bool> CanNavigateFromAsync() => ViewModel.CanNavigateFromAsync();
+
+    public void Dispose()
+    {
+        ViewModel.Dispose();
+    }
 }

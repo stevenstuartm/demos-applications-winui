@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace demos_applications_winui.Notes;
 
 /// <summary>
-/// Registers all Notes domain services, view models, and pages as singletons.
+/// Registers Notes domain services (singleton) and pages/VMs (transient).
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -15,11 +15,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INotesClient, NotesClient>();
         services.AddSingleton<INotesService, NotesService>();
 
-        services.AddSingleton<AllNotesViewModel>();
-        services.AddSingleton<NoteViewModel>();
+        services.AddTransient<AllNotesViewModel>();
+        services.AddTransient<NoteViewModel>();
 
-        services.AddSingleton<AllNotesPage>();
-        services.AddSingleton<NotePage>();
+        services.AddTransient<AllNotesPage>();
+        services.AddTransient<NotePage>();
 
         return services;
     }

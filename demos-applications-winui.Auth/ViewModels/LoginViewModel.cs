@@ -2,16 +2,14 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using demos_applications_winui.Auth.Services;
-using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.ViewModels;
 
 /// <summary>
-/// Drives the login form. Clears credentials on both entry and exit to avoid
-/// stale data in the singleton page. The <see cref="LoginCommand"/> is only
-/// enabled when both username and password are non-empty.
+/// Drives the login form. Transient — fresh instance per navigation,
+/// no stale state to clear.
 /// </summary>
-public partial class LoginViewModel(IAuthService authService) : ObservableObject, INavigable
+public partial class LoginViewModel(IAuthService authService) : ObservableObject
 {
     [ObservableProperty]
     public partial string? Username { get; set; }
@@ -24,23 +22,6 @@ public partial class LoginViewModel(IAuthService authService) : ObservableObject
 
     [ObservableProperty]
     public partial bool HasError { get; set; }
-
-    public Task OnNavigatedToAsync(NavigationContext context)
-    {
-        Username = null;
-        Password = null;
-        ErrorMessage = null;
-        HasError = false;
-        return Task.CompletedTask;
-    }
-
-    public void OnNavigatedFrom()
-    {
-        Username = null;
-        Password = null;
-        ErrorMessage = null;
-        HasError = false;
-    }
 
     private bool CanLogin() => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
 

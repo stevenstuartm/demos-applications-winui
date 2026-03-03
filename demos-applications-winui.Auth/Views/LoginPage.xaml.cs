@@ -1,12 +1,10 @@
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using demos_applications_winui.Auth.ViewModels;
-using demos_applications_winui.Toolkit.Navigation;
 
 namespace demos_applications_winui.Auth.Views;
 
-public sealed partial class LoginPage : Page, INavigable
+public sealed partial class LoginPage : Page
 {
     public LoginViewModel ViewModel { get; }
 
@@ -14,14 +12,6 @@ public sealed partial class LoginPage : Page, INavigable
     {
         ViewModel = viewModel;
         InitializeComponent();
-    }
-
-    public Task OnNavigatedToAsync(NavigationContext context) => ViewModel.OnNavigatedToAsync(context);
-
-    public void OnNavigatedFrom()
-    {
-        PasswordInput.Password = string.Empty;
-        ViewModel.OnNavigatedFrom();
     }
 
     private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)

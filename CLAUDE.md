@@ -10,7 +10,11 @@ dotnet build -p:Platform=x64            # x64
 dotnet build -p:Platform=x86            # x86
 ```
 
-Run from the repo root (where `demos-applications-winui.sln` lives). There are no tests or linting tools configured.
+Run from the repo root (where `demos-applications-winui.sln` lives).
+
+```bash
+dotnet test -p:Platform=ARM64           # Run tests (match platform to build)
+```
 
 ## Architecture
 
@@ -34,7 +38,8 @@ Namespaces use underscores (matching the project naming convention):
 - `demos_applications_winui.Core.Navigation` — guard interfaces and guard names (security policy only)
 - `demos_applications_winui.Core.Configuration` — IHostConfig, NavigationConfig, guard routing builders
 - `demos_applications_winui.Core.Auth` — IAuthState contract
-- `demos_applications_winui.Toolkit.Navigation` — INavigationService, NavigationService, INavigable, NavigationState, NavigationContext
+- `demos_applications_winui.Toolkit.Navigation` — INavigationService, NavigationService, INavigable, NavigationState
+- `demos_applications_winui.Toolkit.WorkInProgress` — IWorkInProgressRepository, IWorkInProgress\<TData\>
 - `demos_applications_winui.Toolkit.Platform` — IToastProvider, IDialogProvider, IFilePickerProvider, ICameraProvider, IWindowHandleProvider
 - `demos_applications_winui.Toolkit.Toast` — ToastPresenter, ToastState, ToastItem (component internals)
 - `demos_applications_winui.Toolkit.Providers` — DialogProvider, FilePickerProvider, CameraProvider, WindowHandleProvider
@@ -50,7 +55,9 @@ Namespaces use underscores (matching the project naming convention):
 
 ### DI and Lifecycle
 
-All services, view models, and pages are registered as **singletons** in `App.xaml.cs`. Constructor injection is used everywhere — no service locator pattern outside the composition root. The only exception is `NavigationService`, which receives `IServiceProvider` to resolve pages by type.
+**Services** (including `NavigationService`, `AuthService`, `NotesService`, state objects) are registered as **singletons**. **Pages and view models** are registered as **transient** — each navigation creates a fresh instance, and the previous one is disposed. Constructor injection is used everywhere — no service locator pattern outside the composition root. The only exception is `NavigationService`, which receives `IServiceProvider` to resolve pages by type.
+
+Pages that need cleanup (cancel commands, unsubscribe events) implement `IDisposable`. The navigation service calls `Dispose()` on the outgoing page automatically.
 
 ### MVVM Pattern
 
@@ -59,8 +66,10 @@ Uses CommunityToolkit.Mvvm (`ObservableObject`, `[ObservableProperty]`, `[RelayC
 ## Conventions
 
 - New domains: separate class library with Models/, Services/, ViewModels/, Views/ folders, referencing Toolkit and Core
-- Register all new pages, VMs, and services as singletons in `App.xaml.cs`
-- New pages must implement `INavigable` (from `Toolkit.Navigation`) — pages delegate to their VMs
+- Register services as singletons, pages and VMs as transient in domain `ServiceCollectionExtensions`
+- New pages must implement `INavigable` (from `Toolkit.Navigation`) — pages delegate `InitializeAsync` and `CanNavigateFromAsync` to their VMs
+- Pages/VMs that need cleanup implement `IDisposable` — navigation service disposes outgoing pages automatically
+- Navigation parameters are load hints (IDs, model snapshots), not mutable working state — pages copy what they need in `InitializeAsync`, use WIP for editing state that spans navigations
 - Navigation guards: implement `INavigationGuard` (Core), register in DI, add `NavigationGuardNames` constant (Core), configure routing in `App.xaml.cs`
 - State/service separation: `IFooState` (read-only, INPC) + `FooState` (mutable, `internal set`) + `IFooService` (actions)
 - No implicit usings — all `System.*` usings must be explicit
