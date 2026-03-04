@@ -14,6 +14,7 @@ public sealed partial class NotePage : Page, INavigable, IDisposable
     public NotePage(NoteViewModel viewModel)
     {
         ViewModel = viewModel;
+        DataContext = viewModel;
         InitializeComponent();
         Loaded += OnLoaded;
     }

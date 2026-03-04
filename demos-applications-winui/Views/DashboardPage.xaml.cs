@@ -1,15 +1,15 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using demos_applications_winui.Toolkit.Navigation;
-using demos_applications_winui.Notes.ViewModels;
+using demos_applications_winui.ViewModels;
 
-namespace demos_applications_winui.Notes.Views;
+namespace demos_applications_winui.Views;
 
-public sealed partial class AllNotesPage : Page, INavigable
+public sealed partial class DashboardPage : Page, INavigable
 {
-    public AllNotesViewModel ViewModel { get; }
+    public DashboardViewModel ViewModel { get; }
 
-    public AllNotesPage(AllNotesViewModel viewModel)
+    public DashboardPage(DashboardViewModel viewModel)
     {
         ViewModel = viewModel;
         DataContext = viewModel;

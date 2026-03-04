@@ -81,6 +81,20 @@ public partial class NavigationService(
         await NavigateCoreAsync(targetType, targetParam, clearBackStack: isRedirect);
     }
 
+    public async Task NavigateToAsync(Type pageType, object? parameter = null)
+    {
+        if (_frame is null || _navigationInProgress) return;
+
+        if (!await CheckCanNavigateFromAsync())
+            return;
+
+        var (allowed, targetType, targetParam) = CheckGuards(pageType, parameter);
+        if (!allowed) return;
+
+        var isRedirect = targetType != pageType;
+        await NavigateCoreAsync(targetType, targetParam, clearBackStack: isRedirect);
+    }
+
     public async Task NavigateAndReplaceAsync<TPage>(object? parameter = null)
     {
         if (_frame is null || _navigationInProgress) return;

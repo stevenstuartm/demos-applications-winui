@@ -11,6 +11,7 @@ public sealed partial class LoginPage : Page
     public LoginPage(LoginViewModel viewModel)
     {
         ViewModel = viewModel;
+        DataContext = viewModel;
         InitializeComponent();
     }
 

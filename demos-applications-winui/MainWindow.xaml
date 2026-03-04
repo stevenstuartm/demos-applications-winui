@@ -14,14 +14,14 @@
     </Window.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
-        
+
         <Grid.RowDefinitions>
             <!-- Title Bar -->
             <RowDefinition Height="Auto" />
             <!-- App Content -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <TitleBar x:Name="AppTitleBar"
           Title="WinUI Notes"
           IsBackButtonVisible="{x:Bind NavigationState.CanGoBack, Mode=OneWay}"
@@ -42,17 +42,35 @@
 
         </TitleBar>
 
-        <!-- App content -->
-        <Frame x:Name="rootFrame" Grid.Row="1">
-            <Frame.ContentTransitions>
-                <TransitionCollection>
-                    <ContentThemeTransition/>
-                </TransitionCollection>
-            </Frame.ContentTransitions>
-        </Frame>
+        <!-- Global navigation wrapping app content -->
+        <NavigationView x:Name="AppNav"
+                        Grid.Row="1"
+                        PaneDisplayMode="Top"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        IsPaneVisible="{x:Bind AuthState.IsAuthenticated, Mode=OneWay}"
+                        SelectionChanged="AppNav_SelectionChanged">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="DashboardNavItem" Content="Dashboard" Tag="Dashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="rootFrame">
+                <Frame.ContentTransitions>
+                    <TransitionCollection>
+                        <ContentThemeTransition/>
+                    </TransitionCollection>
+                </Frame.ContentTransitions>
+            </Frame>
+
+        </NavigationView>
 
         <!-- Toast overlay (DI-resolved, added in code-behind) -->
 
     </Grid>
-    
+
 </Window>

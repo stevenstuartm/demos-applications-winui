@@ -10,9 +10,13 @@
 
     <Page.Resources>
         <DataTemplate x:Key="NoteItemTemplate" x:DataType="models:Note">
-
-            <ItemContainer CornerRadius="{StaticResource OverlayCornerRadius}">
-
+            <Button Command="{Binding OpenNoteCommand}"
+                    CommandParameter="{x:Bind}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    Padding="0"
+                    BorderThickness="0"
+                    Background="Transparent">
                 <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                       BorderThickness="1"
                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -35,7 +39,7 @@
                     </Border>
 
                 </Grid>
-            </ItemContainer>
+            </Button>
         </DataTemplate>
     </Page.Resources>
 
@@ -53,17 +57,16 @@
             </CommandBar.Content>
         </CommandBar>
 
-        <ItemsView ItemsSource="{x:Bind ViewModel.Notes}" ItemTemplate="{StaticResource NoteItemTemplate}"
-           Grid.Row="1" Padding="16"
-           SelectionMode="None"
-           IsItemInvokedEnabled="True"
-           ItemInvoked="ItemsView_ItemInvoked">
-            <ItemsView.Layout>
-                <UniformGridLayout MinItemWidth="200"
-                           MinColumnSpacing="12"
-                           MinRowSpacing="12"
-                           ItemsJustification="Start"/>
-            </ItemsView.Layout>
-        </ItemsView>
+        <ScrollViewer Grid.Row="1" Padding="16">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Notes}"
+                           ItemTemplate="{StaticResource NoteItemTemplate}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout MinItemWidth="200"
+                               MinColumnSpacing="12"
+                               MinRowSpacing="12"
+                               ItemsJustification="Start"/>
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+        </ScrollViewer>
     </Grid>
 </Page>

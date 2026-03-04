@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace demos_applications_winui.Toolkit.Navigation;
@@ -12,6 +13,7 @@ public interface INavigationService
 {
     Task GoBackAsync();
     Task NavigateToAsync<TPage>(object? parameter = null);
+    Task NavigateToAsync(Type pageType, object? parameter = null);
 
     /// <summary>
     /// Navigates to the target page and clears the back stack, preventing back-navigation

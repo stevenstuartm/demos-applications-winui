@@ -13,8 +13,9 @@ using demos_applications_winui.Auth.Views;
 using demos_applications_winui.Core.Configuration;
 using demos_applications_winui.Core.Navigation;
 using demos_applications_winui.Notes;
-using demos_applications_winui.Notes.Views;
 using demos_applications_winui.Toolkit.Configuration;
+using demos_applications_winui.ViewModels;
+using demos_applications_winui.Views;
 using demos_applications_winui.Toolkit.Navigation;
 using demos_applications_winui.Toolkit.Platform;
 using demos_applications_winui.Toolkit.Providers;
@@ -89,7 +90,7 @@ public partial class App : Application
 
         // Configuration — each AddXConfig() calls its resolver and registers the result
         var hostConfig = services.AddHostConfig();
-        services.AddNavigationConfig(typeof(AllNotesPage), config =>
+        services.AddNavigationConfig(typeof(DashboardPage), config =>
         {
             config.Guard(NavigationGuardNames.IsAuthenticated).ForAll().Except(typeof(LoginPage));
         });
@@ -98,6 +99,10 @@ public partial class App : Application
         // can resolve IAuthState for dynamic token injection.
         services.AddAuth();
         services.AddNotes();
+
+        // Dashboard (shell-level page, not a domain)
+        services.AddTransient<DashboardViewModel>();
+        services.AddTransient<DashboardPage>();
 
         // Logging — JSON-driven Serilog configuration, layered by Stage
         var logDirectory = Environment.GetEnvironmentVariable("APP_LOG_DIRECTORY")
