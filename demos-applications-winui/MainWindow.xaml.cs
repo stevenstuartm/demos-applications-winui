@@ -31,6 +31,7 @@ public sealed partial class MainWindow : Window
         IAuthState authState,
         IAuthService authService,
         IDialogProvider dialogProvider,
+        ICameraProvider cameraProvider,
         ToastPresenter toastPresenter)
     {
         _navigationService = navigationService;
@@ -48,7 +49,11 @@ public sealed partial class MainWindow : Window
 
         navigationService.SetFrame(new NavigationFrame(rootFrame));
 
-        rootFrame.Loaded += (_, _) => dialogProvider.SetXamlRoot(rootFrame.XamlRoot);
+        rootFrame.Loaded += (_, _) =>
+        {
+            dialogProvider.SetXamlRoot(rootFrame.XamlRoot);
+            cameraProvider.SetXamlRoot(rootFrame.XamlRoot);
+        };
 
         navigationState.PropertyChanged += OnNavigationStateChanged;
     }

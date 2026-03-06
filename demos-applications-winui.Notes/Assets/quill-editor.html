@@ -67,8 +67,12 @@
         });
 
         // C# -> JS: Set HTML content
+        let _ignoreChanges = false;
         function setContent(html) {
+            _ignoreChanges = true;
             quill.root.innerHTML = html || '';
+            // MutationObserver fires async + 300ms debounce — cover both
+            setTimeout(() => { _ignoreChanges = false; }, 500);
         }
 
         // C# -> JS: Get HTML content
@@ -90,9 +94,10 @@
             quill.setSelection(range.index + 1);
         }
 
-        // JS -> C#: Notify content changed (debounced)
+        // JS -> C#: Notify content changed (debounced, user edits only)
         let debounceTimer;
         quill.on('text-change', function() {
+            if (_ignoreChanges) return;
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(function() {
                 window.chrome.webview.postMessage(JSON.stringify({

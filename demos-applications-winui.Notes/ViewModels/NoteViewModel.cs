@@ -49,7 +49,10 @@ public partial class NoteViewModel(
     public bool IsEditorLoading => !IsEditorReady;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsReadOnly))]
     public partial bool IsEditMode { get; set; }
+
+    public bool IsReadOnly => !IsEditMode;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PageTitle))]
@@ -66,7 +69,7 @@ public partial class NoteViewModel(
     [ObservableProperty]
     public partial bool HasAttachments { get; set; }
 
-    public ObservableCollection<NoteAttachment> Attachments { get; } = [];
+    public ObservableCollection<AttachmentItemViewModel> Attachments { get; } = [];
 
     /// <summary>
     /// Called by the view after WebView2 initializes. If <see cref="InitializeAsync"/>
@@ -82,11 +85,9 @@ public partial class NoteViewModel(
         _editorBridge.ContentChanged += OnEditorContentChanged;
 
         if (_savedHtmlContent is not null)
-        {
-            _suppressDirtyTracking = true;
             await _editorBridge.SetContentAsync(_savedHtmlContent);
-            _suppressDirtyTracking = false;
-        }
+
+        await _editorBridge.SetReadOnlyAsync(!IsEditMode);
     }
 
     public async Task InitializeAsync(object? parameter)
@@ -100,13 +101,13 @@ public partial class NoteViewModel(
             Title = note.Title;
             CreatedDate = note.CreatedDate;
             _savedHtmlContent = note.HtmlContent;
-            IsEditMode = true;
+            IsEditMode = false;
 
             Attachments.Clear();
             if (note.Attachments is not null)
             {
                 foreach (var attachment in note.Attachments)
-                    Attachments.Add(attachment);
+                    Attachments.Add(CreateAttachmentItem(attachment));
             }
             HasAttachments = Attachments.Count > 0;
 
@@ -158,7 +159,6 @@ public partial class NoteViewModel(
     [RelayCommand]
     private async Task ToggleModeAsync()
     {
-        IsEditMode = !IsEditMode;
         if (_editorBridge is not null)
             await _editorBridge.SetReadOnlyAsync(!IsEditMode);
     }
@@ -234,13 +234,13 @@ public partial class NoteViewModel(
                 _currentNote.Id!, file.FileName, stream);
             _currentNote.Attachments ??= [];
             _currentNote.Attachments.Add(attachment);
-            Attachments.Add(attachment);
+            Attachments.Add(CreateAttachmentItem(attachment));
 
             if (attachment.AttachmentType == NoteAttachmentType.Image && _editorBridge is not null)
             {
                 var absolutePath = notesService.GetAttachmentAbsolutePath(
                     _currentNote.Id!, attachment.RelativePath!);
-                var fileUri = new System.Uri(absolutePath).AbsoluteUri;
+                var fileUri = new Uri(absolutePath).AbsoluteUri;
                 await _editorBridge.InsertImageAsync(fileUri);
             }
         }
@@ -252,7 +252,16 @@ public partial class NoteViewModel(
         }
     }
 
-    [RelayCommand]
+    private async Task OpenAttachmentAsync(NoteAttachment attachment)
+    {
+        if (_currentNote is null) return;
+
+        var absolutePath = notesService.GetAttachmentAbsolutePath(
+            _currentNote.Id!, attachment.RelativePath!);
+        var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(absolutePath);
+        await Windows.System.Launcher.LaunchFileAsync(file);
+    }
+
     private async Task RemoveAttachmentAsync(NoteAttachment attachment)
     {
         if (_currentNote is null) return;
@@ -260,7 +269,11 @@ public partial class NoteViewModel(
         await notesService.RemoveAttachmentAsync(
             _currentNote.Id!, attachment.Id!, attachment.RelativePath!);
         _currentNote.Attachments?.Remove(attachment);
-        Attachments.Remove(attachment);
+
+        var item = Attachments.FirstOrDefault(a => a.Attachment == attachment);
+        if (item is not null)
+            Attachments.Remove(item);
+
         HasAttachments = Attachments.Count > 0;
         IsDirty = true;
     }
@@ -279,18 +292,29 @@ public partial class NoteViewModel(
             _currentNote.Id!, fileName, stream);
         _currentNote.Attachments ??= [];
         _currentNote.Attachments.Add(attachment);
-        Attachments.Add(attachment);
+        Attachments.Add(CreateAttachmentItem(attachment));
         HasAttachments = true;
 
         if (_editorBridge is not null)
         {
             var absolutePath = notesService.GetAttachmentAbsolutePath(
                 _currentNote.Id!, attachment.RelativePath!);
-            var fileUri = new System.Uri(absolutePath).AbsoluteUri;
+            var fileUri = new Uri(absolutePath).AbsoluteUri;
             await _editorBridge.InsertImageAsync(fileUri);
         }
 
         IsDirty = true;
+    }
+
+    private AttachmentItemViewModel CreateAttachmentItem(NoteAttachment attachment)
+    {
+        var absolutePath = notesService.GetAttachmentAbsolutePath(
+            _currentNote!.Id!, attachment.RelativePath!);
+        var thumbnailUri = attachment.AttachmentType == NoteAttachmentType.Image
+            ? new Uri(absolutePath).AbsoluteUri
+            : null;
+        return new AttachmentItemViewModel(
+            attachment, thumbnailUri, OpenAttachmentAsync, RemoveAttachmentAsync);
     }
 
     private void OnEditorContentChanged(object? sender, string html)
